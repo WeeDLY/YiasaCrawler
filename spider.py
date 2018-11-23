@@ -54,12 +54,13 @@ class Spider:
         """ Iterate through the entire queue stack """
         while self.queue:
             url = self.queue.pop()
+            self.log.log(logger.LogLevel.INFO, 'ThreadId: %s, crawling: %s' % (self.id, url))
             self.completed_queue.add(url)
             req = self.request(url)
             soup = BeautifulSoup(req.text, 'html.parser')
             valid_urls = self.extract_url(soup)
             self.add_to_queue(valid_urls)
-            print('Crawled: %d, queue: %d, completed_queue: %d, new_domains: %d' % (self.crawled_urls, len(self.queue), len(self.completed_queue), len(self.new_domains)))
+            self.log.log(logger.LogLevel.DEBUG, 'CrawlId: %s, Crawled: %d, queue: %d, completed_queue: %d, new_domains: %d' % (self.id, self.crawled_urls, len(self.queue), len(self.completed_queue), len(self.new_domains)))
             time.sleep(self.crawl_delay)
     
     def add_to_queue(self, urls):
@@ -79,7 +80,8 @@ class Spider:
                 continue
             if url.startswith('mailto'):
                 continue
-
+            if url == '':
+                continue
             url = url[1:len(url)] if url[0] == '.' else url # Remove '.' prefix in url, if websites use it
             url = url if url[0] == '/' else '/%s' % url # Adds '/' to url, if it's a relative path url
             url = '%s%s' % (self.domain, url)
@@ -107,11 +109,12 @@ class Spider:
                 elif line.startswith('crawl-delay'):
                     delay = int(re.search('\d+', line).group())
                     self.crawl_delay = delay
-        
+        """
         print('disallow')
         print(self.robots["disallow"])
         print('allow')
         print(self.robots["allow"])
+        """
 
     def valid_url(self, url):
         """ Checks if a url is valid """
