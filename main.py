@@ -6,12 +6,12 @@ import threading
 def main():
     log = logger.Logger('yiasa_log', 'logs')
 
-    threads = 3
+    threads = 1
     crawlerThreads = []
 
-    Spider.queue.add('http://e24.no/')
-    Spider.queue.add('http://sa.no/')
-    Spider.queue.add('http://dagbladet.no/')
+    #Spider.queue.add('http://e24.no/')
+    Spider.queue.add('http://sa.no')
+    #Spider.queue.add('http://dagbladet.no/')
     #a.parse_robots()
     #Spider.print_queue()
 

@@ -43,12 +43,11 @@ class Spider:
         valid_urls = self.extract_url(soup)
         self.add_to_queue(valid_urls)
         self.crawl()
-        self.crawled_urls += 1
     
     def request(self, url):
+        """ sends a http request to url """
         self.crawled_urls += 1
-        r = requests.get(url)
-        return r
+        return requests.get(url)
 
     def crawl(self):
         """ Iterate through the entire queue stack """
@@ -64,11 +63,13 @@ class Spider:
             time.sleep(self.crawl_delay)
     
     def add_to_queue(self, urls):
+        """ Adds a list of urls to the queue """
         for url in urls:
             if self.domain not in url:
                 self.new_domains.add(url)
             elif url not in self.queue and url not in self.completed_queue:
-                self.queue.add(url)
+                if self.url_follow_robots(url):
+                    self.queue.add(url)
 
     def extract_url(self, soup):
         """ Extract all urls from a soup """
@@ -89,10 +90,20 @@ class Spider:
                 valid_urls.add(url)
         return valid_urls
 
+    def url_follow_robots(self, url):
+        """ Checks if a url breaks the robots.txt rules """
+        for disallow in self.robots["disallow"]:
+            invalid = re.search(disallow, url, re.IGNORECASE)
+            if invalid:
+                return False
+        return True
+
     def parse_robots(self):
+        """ Parses robots.txt. disallow/allow is placed in self.robots """
         r = requests.get('%s/robots.txt' % self.domain)
         if r.status_code == 404:
             print('No robots.txt')
+            return
         
         user_agent = True
         for line in r.text.lower().split('\n'):
@@ -103,18 +114,14 @@ class Spider:
                     user_agent = False
             if user_agent:
                 if line.startswith('disallow:'):
-                    self.robots["disallow"].append(line.split(':')[1].replace(' ', ''))
+                    disallow = line.split(':')[1].replace(' ', '')
+                    disallow = disallow.replace('*', '.+')
+                    self.robots["disallow"].append(disallow)
                 elif line.startswith('allow:'):
                     self.robots["allow"].append(line.split(':')[1].replace(' ', ''))
                 elif line.startswith('crawl-delay'):
                     delay = int(re.search('\d+', line).group())
                     self.crawl_delay = delay
-        """
-        print('disallow')
-        print(self.robots["disallow"])
-        print('allow')
-        print(self.robots["allow"])
-        """
 
     def valid_url(self, url):
         """ Checks if a url is valid """
