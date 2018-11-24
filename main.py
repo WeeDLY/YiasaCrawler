@@ -1,10 +1,15 @@
-import logger
 from spider import Spider
 import time
 import threading
+import logger
+import database.database as database
 
 def main():
     log = logger.Logger('yiasa_log', 'logs')
+
+    db_status = check_database(log)
+    if db_status is None:
+        return
 
     threads = 1
     crawlerThreads = []
@@ -25,6 +30,17 @@ def main():
     while True:
         time.sleep(5)
 
+
+def check_database(log):
+    """ Checks that database is up and running correctly """
+    db = database.Database(log, 'yiasa.db')
+    status = db.check_database()
+    if status is False:
+        log.log(logger.LogLevel.CRITICAL, 'Database is not set up correctly')
+        return None
+    
+    log.log(logger.LogLevel.INFO, 'Database is correctly set up')
+    return db
 
 if __name__ == '__main__':
     main()
