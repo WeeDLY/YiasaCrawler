@@ -1,21 +1,22 @@
-17.12.2018 20:40:32 [INFO]: Checking database tables 
-17.12.2018 20:40:32 [INFO]: Checking table(0): crawled 
-17.12.2018 20:40:32 [DEBUG]: database.query_exists: SELECT name FROM sqlite_master WHERE type='table' AND name=? | ('crawled',) 
-17.12.2018 20:40:32 [INFO]: Checking table(0): crawl_history 
-17.12.2018 20:40:32 [DEBUG]: database.query_exists: SELECT name FROM sqlite_master WHERE type='table' AND name=? | ('crawl_history',) 
-17.12.2018 20:40:32 [INFO]: Checking table(0): crawl_information 
-17.12.2018 20:40:32 [DEBUG]: database.query_exists: SELECT name FROM sqlite_master WHERE type='table' AND name=? | ('crawl_information',) 
-17.12.2018 20:40:32 [INFO]: Checking table(0): crawl_queue 
-17.12.2018 20:40:32 [DEBUG]: database.query_exists: SELECT name FROM sqlite_master WHERE type='table' AND name=? | ('crawl_queue',) 
-17.12.2018 20:40:32 [INFO]: Database is correctly set up 
-17.12.2018 20:40:33 [INFO]: ThreadId: 0, crawling: http://sa.no/vis/videotips/ 
-17.12.2018 20:40:33 [DEBUG]: CrawlId: 0, Crawled: 2, queue: 97, completed_queue: 1, new_domains: 27 
-17.12.2018 20:40:33 [INFO]: ThreadId: 0, crawling: http://sa.no/bildeserier/ 
-17.12.2018 20:40:33 [DEBUG]: CrawlId: 0, Crawled: 3, queue: 140, completed_queue: 2, new_domains: 27 
-17.12.2018 20:40:33 [INFO]: ThreadId: 0, crawling: http://sa.no/vintersport/kjerringasen/nyhet/kjerringasen-apnet-i-helgen/s/5-46-622188 
-17.12.2018 20:40:33 [DEBUG]: CrawlId: 0, Crawled: 4, queue: 143, completed_queue: 3, new_domains: 27 
-17.12.2018 20:40:33 [INFO]: ThreadId: 0, crawling: http://sa.no/bildeserier/sarpsborg-08/europa-league/se-bilder-fra-sarpsborg-stadion/g/5-46-612726 
-17.12.2018 20:40:33 [DEBUG]: CrawlId: 0, Crawled: 5, queue: 142, completed_queue: 4, new_domains: 29 
-17.12.2018 20:40:33 [INFO]: ThreadId: 0, crawling: http://sa.no/vis/eiendomtilsalgs 
-17.12.2018 20:40:34 [DEBUG]: CrawlId: 0, Crawled: 6, queue: 141, completed_queue: 5, new_domains: 29 
-17.12.2018 20:40:34 [INFO]: ThreadId: 0, crawling: http://sa.no/fotball/live/ 
+17.12.2018 20:50:33 [INFO]: Yiasabot is starting. DebugMode: False 
+17.12.2018 20:50:33 [INFO]: Checking database tables 
+17.12.2018 20:50:33 [INFO]: Checking table(0): crawled 
+17.12.2018 20:50:33 [DEBUG]: database.query_exists: SELECT name FROM sqlite_master WHERE type='table' AND name=? | ('crawled',) 
+17.12.2018 20:50:33 [INFO]: Checking table(0): crawl_history 
+17.12.2018 20:50:33 [DEBUG]: database.query_exists: SELECT name FROM sqlite_master WHERE type='table' AND name=? | ('crawl_history',) 
+17.12.2018 20:50:33 [INFO]: Checking table(0): crawl_information 
+17.12.2018 20:50:33 [DEBUG]: database.query_exists: SELECT name FROM sqlite_master WHERE type='table' AND name=? | ('crawl_information',) 
+17.12.2018 20:50:33 [INFO]: Checking table(0): crawl_queue 
+17.12.2018 20:50:33 [DEBUG]: database.query_exists: SELECT name FROM sqlite_master WHERE type='table' AND name=? | ('crawl_queue',) 
+17.12.2018 20:50:33 [INFO]: Database is correctly set up 
+17.12.2018 20:50:51 [INFO]: Yiasabot is starting. DebugMode: False 
+17.12.2018 20:50:51 [INFO]: Checking database tables 
+17.12.2018 20:50:51 [INFO]: Checking table(0): crawled 
+17.12.2018 20:50:51 [DEBUG]: database.query_exists: SELECT name FROM sqlite_master WHERE type='table' AND name=? | ('crawled',) 
+17.12.2018 20:50:51 [INFO]: Checking table(0): crawl_history 
+17.12.2018 20:50:51 [DEBUG]: database.query_exists: SELECT name FROM sqlite_master WHERE type='table' AND name=? | ('crawl_history',) 
+17.12.2018 20:50:51 [INFO]: Checking table(0): crawl_information 
+17.12.2018 20:50:51 [DEBUG]: database.query_exists: SELECT name FROM sqlite_master WHERE type='table' AND name=? | ('crawl_information',) 
+17.12.2018 20:50:51 [INFO]: Checking table(0): crawl_queue 
+17.12.2018 20:50:51 [DEBUG]: database.query_exists: SELECT name FROM sqlite_master WHERE type='table' AND name=? | ('crawl_queue',) 
+17.12.2018 20:50:51 [INFO]: Database is correctly set up 

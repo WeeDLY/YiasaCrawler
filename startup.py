@@ -1,19 +1,25 @@
-from spider import Spider
 import time
-import database.database as database
 import threading
-import util.logger as logger
+import argparse
 
-def main():
+import database.database as database
+from spider import Spider
+import util.logger as logger
+import debug.debug as debug
+
+def startup(debugMode):
     log = logger.Logger('yiasa_log', 'logs')
+    log.log(logger.LogLevel.INFO, 'Yiasabot is starting. DebugMode: %s' % debugMode, forcePrint=True)
 
     db_status = check_database(log)
     if db_status is None:
         return
 
+    debug.debug(log)
+
+    """
     threads = 1
     crawlerThreads = []
-
     #Spider.queue.add('http://e24.no/')
     Spider.queue.add('http://sa.no')
     #Spider.queue.add('http://dagbladet.no/')
@@ -29,6 +35,7 @@ def main():
     
     while True:
         time.sleep(5)
+    """
 
 
 def check_database(log):
@@ -42,5 +49,13 @@ def check_database(log):
     log.log(logger.LogLevel.INFO, 'Database is correctly set up')
     return db
 
+
+def parse_arguments():
+    """ Parse args from user """
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-d', '--debug', action='store_true', default=False)
+    args = parser.parse_args()
+    startup(args.debug)
+
 if __name__ == '__main__':
-    main()
+    parse_arguments()
