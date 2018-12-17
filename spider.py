@@ -1,7 +1,8 @@
-import requests
-import logger
 from bs4 import BeautifulSoup
+import requests
 import re, time
+
+import util.logger as logger
 
 class Spider:
     queue = set()
