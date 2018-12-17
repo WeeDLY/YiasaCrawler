@@ -2,7 +2,7 @@ from spider import Spider
 import time
 import database.database as database
 import threading
-import logger
+import util.logger as logger
 
 def main():
     log = logger.Logger('yiasa_log', 'logs')
