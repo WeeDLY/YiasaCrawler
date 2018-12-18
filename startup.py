@@ -3,9 +3,10 @@ import threading
 import argparse
 
 import database.database as database
-from spider import Spider
+from Yiasa.spider import Spider
 import util.logger as logger
 import debug.debug as debug
+import Yiasa.main as main
 
 def startup(debugMode):
     log = logger.Logger('yiasa_log', 'logs')
@@ -15,27 +16,10 @@ def startup(debugMode):
     if db_status is None:
         return
 
-    debug.debug(log)
-
-    """
-    threads = 1
-    crawlerThreads = []
-    #Spider.queue.add('http://e24.no/')
-    Spider.queue.add('http://sa.no')
-    #Spider.queue.add('http://dagbladet.no/')
-    #a.parse_robots()
-    #Spider.print_queue()
-
-    for i in range(threads):
-        spider = Spider(log, i, Spider.queue.pop())
-        spiderThread = threading.Thread(target=spider.start_crawl)
-        spiderThread.daemon = True
-        crawlerThreads.append(spiderThread)
-        spiderThread.start()
-    
-    while True:
-        time.sleep(5)
-    """
+    if debugMode:
+        debug.debug(log)
+    else:
+        main.start(log)
 
 
 def check_database(log):
