@@ -1,5 +1,23 @@
 import database
 
+def QUERY_GET_TABLE_CRAWLED():
+    """ Dumps table 'crawled' """
+    return """ SELECT * FROM crawled"""
+def QUERY_GET_TABLE_CRAWL_HISTORY():
+    """ Dumps table 'crawl_history' """
+    return """ SELECT * FROM crawl_history"""
+def QUERY_GET_TABLE_CRAWL_QUEUE():
+    """ Dumps table 'crawl_queue' """
+    return """ SELECT * FROM crawl_queue"""
+def QUERY_GET_TABLE_CRAWL_INFORMATION():
+    """ Dumps table 'crawl_information' """
+    return """ SELECT * FROM crawl_information"""
+
+
+def QUERY_TABLE_EXISTS():
+    """ Query that checks if a table exists in the database """
+    return "SELECT name FROM sqlite_master WHERE type='table' AND name=?"
+
 def QUERY_CREATE_TABLE_CRAWLED():
     """ Create query for table 'crawled' """
     return """ CREATE TABLE crawled (
@@ -37,7 +55,3 @@ def QUERY_CREATE_TABLE_CRAWL_INFORMATION():
                 extracted_date date,
                 FOREIGN KEY (url) REFERENCES crawl_history(url)
         )"""
-
-def QUERY_TABLE_EXISTS():
-    """ Query that checks if a table exists in the database """
-    return "SELECT name FROM sqlite_master WHERE type='table' AND name=?"

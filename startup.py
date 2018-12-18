@@ -12,14 +12,14 @@ def startup(debugMode):
     log = logger.Logger('yiasa_log', 'logs')
     log.log(logger.LogLevel.INFO, 'Yiasabot is starting. DebugMode: %s' % debugMode, forcePrint=True)
 
-    db_status = check_database(log)
-    if db_status is None:
+    db = check_database(log)
+    if db is None:
         return
 
     if debugMode:
-        debug.debug(log)
+        debug.debug(log, db)
     else:
-        main.start(log)
+        main.start(log, db)
 
 
 def check_database(log):

@@ -29,6 +29,26 @@ class Database():
         if table_crawl_queue is False:
             return False
 
+    def database_dump(self):
+        """ Dumps all tables in database """
+        print('=====Dumping database=====')
+        print('=====CRAWLED=====')
+        self.table_dump(query.QUERY_GET_TABLE_CRAWLED())
+        print('=====CRAWL_INFORMATION=====')
+        self.table_dump(query.QUERY_GET_TABLE_CRAWL_INFORMATION())
+        print('=====CRAWL_QUEUE=====')
+        self.table_dump(query.QUERY_GET_TABLE_CRAWL_QUEUE())
+        print('=====CRAWL_HISTORY=====')
+        self.table_dump(query.QUERY_GET_TABLE_CRAWL_HISTORY())
+
+    def table_dump(self, query):
+        try:
+            c = self.connection.cursor()
+            for row in c.execute(query):
+                print(row)
+        except Exception as e:
+            self.log.log(logger.LogLevel.ERROR, "Exception when dumping database: %s" % e)
+
     def check_table(self, table, createTableQuery, maxAttempts=3):
         """ Checks and/or creates an individual table """
         tableSetUp = False

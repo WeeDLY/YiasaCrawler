@@ -2,7 +2,7 @@ import sys
 sys.path.append('..')
 import util.logger as logger
 
-def start(log):
+def start(log, db):
     log.log(logger.LogLevel.INFO, 'Starting YiasaBot', forcePrint=True)
     """
     threads = 1
