@@ -12,7 +12,7 @@ class LogLevel(Enum):
 
 class Logger():
     """ Logger class """
-    def __init__(self, filename, folder, maxSize=3000, printLevel=LogLevel.INFO):
+    def __init__(self, filename, folder, maxSize=3000, printLevel=LogLevel.DEBUG):
         self.filename = filename
         self.folder = folder
         self.maxSize = maxSize

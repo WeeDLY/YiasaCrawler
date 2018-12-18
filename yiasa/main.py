@@ -1,3 +1,4 @@
+import time
 import sys
 sys.path.append('..')
 
@@ -10,7 +11,10 @@ def start(log, db):
 
     spider_handler = handler.Handler(log, db)
     spider_handler.start_threads()
-    
+
+    while True:
+        time.sleep(5*2)
+        print('main_thread')
 
     """
     threads = 1

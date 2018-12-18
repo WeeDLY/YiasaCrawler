@@ -64,7 +64,7 @@ class Database():
             i += 1
         if tableSetUp is False:
             self.log.log(logger.LogLevel.CRITICAL, 'Could not create table: %s' % table)
-        return tableSetUp    
+        return tableSetUp
 
     def query_exists(self, q, param=None):
         """ checks if the query yields a result """

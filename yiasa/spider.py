@@ -2,9 +2,11 @@ from bs4 import BeautifulSoup
 import requests
 import re, time
 import sys
+from datetime import datetime
 sys.path.append('..')
 
 import util.logger as logger
+import database.query as query
 import yiasa.handler
 
 class Spider:
@@ -24,6 +26,7 @@ class Spider:
 
     def __init__(self, log, db, name, domain):
         self.log = log
+        self.db = db
         self.name = name
         # Removes '/' suffix if it's there
         self.domain = domain[:len(domain)-1] if domain[len(domain) - 1] == '/' else domain
@@ -46,6 +49,7 @@ class Spider:
         soup = BeautifulSoup(req.text, 'html.parser')
         valid_urls = self.extract_url(soup)
         self.add_to_queue(valid_urls)
+        print(valid_urls)
         self.crawl()
     
     def request(self, url):
@@ -55,16 +59,36 @@ class Spider:
 
     def crawl(self):
         """ Iterate through the entire queue stack """
-        while self.queue:
+        while self.queue and self.crawled_urls < 500:
             url = self.queue.pop()
             self.log.log(logger.LogLevel.DEBUG, 'ThreadId: %s, crawling: %s' % (self.name, url))
             self.completed_queue.add(url)
             req = self.request(url)
+            crawlHistory = self.db.query_commit(query.QUERY_INSERT_TABLE_CRAWL_HISTORY(), (self.domain, url, req.status_code, 0, datetime.now()))
+            if crawlHistory is False:
+                self.log.log(logger.LogLevel.WARNING, 'Unable to insert into crawl_history: %s' % url)
+
             soup = BeautifulSoup(req.text, 'html.parser')
             valid_urls = self.extract_url(soup)
             self.add_to_queue(valid_urls)
-            self.log.log(logger.LogLevel.DEBUG, 'CrawlId: %s, Crawled: %d, queue: %d, completed_queue: %d, new_domains: %d' % (self.name, self.crawled_urls, len(self.queue), len(self.completed_queue), len(self.new_domains)))
+            #self.log.log(logger.LogLevel.DEBUG, 'CrawlId: %s, Crawled: %d, queue: %d, completed_queue: %d, new_domains: %d' % (self.name, self.crawled_urls, len(self.queue), len(self.completed_queue), len(self.new_domains)))
             time.sleep(self.crawl_delay)
+        
+        # Finished crawling, insert stats to DB
+        self.finish_crawl()
+        
+    def finish_crawl(self):
+        """ Finished crawling, inserts result to DB """
+        domainExists = self.db.query_exists(query.QUERY_GET_CRAWLED_DOMAIN(), (self.domain, ))
+        if domainExists:
+            dbCrawled = self.db.query_commit(query.QUERY_UPDATE_TABLE_CRAWLED(), (len(self.new_domains), self.crawled_urls, datetime.now(), self.domain))
+            if dbCrawled:
+                self.log.log(logger.LogLevel.INFO, 'Added crawl stats to DB from: %s' % self.name)
+            else:
+                self.log.log(logger.LogLevel.WARNING, 'Unable to insert crawl stats to DB from: %s' % self.name)
+        else:
+            self.log.log(logger.LogLevel.CRITICAL, 'Domain: %s was finshed crawling, but does not exist in DB!' % self.domain)
+
     
     def add_to_queue(self, urls):
         """ Adds a list of urls to the queue """

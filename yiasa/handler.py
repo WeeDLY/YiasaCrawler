@@ -2,6 +2,7 @@ import threading
 import sys
 sys.path.append('..')
 
+import database.query as query
 import util.logger as logger
 import yiasa.spider as spider
 from yiasa.spider import Spider
@@ -20,9 +21,17 @@ class Handler:
     def start_threads(self):
         started = 0
         while len(self.spiderThreadList) < self.threads and len(self.queue) > 0:
-            s = Spider(self.log, self.db, self.threadId, self.queue.pop())
+            domain = self.queue.pop()
+            self.setup_db_row(domain)
+
+            s = Spider(self.log, self.db, self.threadId, domain)
             t = threading.Thread(target=s.start_crawl, name=self.threadId)
             t.daemon = True
             self.spiderThreadList.append(t)
             t.start()
             self.log.log(logger.LogLevel.INFO, 'Started new spider: %s' % s.to_string())
+    
+    def setup_db_row(self, domain):
+        domainExists = self.db.query_exists(query.QUERY_GET_CRAWLED_DOMAIN(), (domain, ))
+        if domainExists is False:
+            self.db.query_commit(query.QUERY_INSERT_TABLE_CRAWLED(), (domain, 0, 0, 'NULL'))
