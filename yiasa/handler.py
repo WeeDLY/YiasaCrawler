@@ -29,6 +29,7 @@ class Handler:
             t.daemon = True
             self.spiderThreadList.append(t)
             t.start()
+            self.threadId += 1
             self.log.log(logger.LogLevel.INFO, 'Started new spider: %s' % s.to_string())
     
     def setup_db_row(self, domain):

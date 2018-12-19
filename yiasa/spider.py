@@ -36,6 +36,7 @@ class Spider:
         self.crawled_urls = 0
         self.robots = {"disallow":[], "allow":[]}
         self.crawl_delay = 0
+        self.max_urls = 100 # Max amount of urls to be crawled
 
     def to_string(self):
         return 'Name:%s @domain: %s' % (self.name, self.domain)
@@ -59,7 +60,7 @@ class Spider:
 
     def crawl(self):
         """ Iterate through the entire queue stack """
-        while self.queue and self.crawled_urls < 500:
+        while self.queue and self.crawled_urls < self.max_urls:
             url = self.queue.pop()
             self.log.log(logger.LogLevel.DEBUG, 'ThreadId: %s, crawling: %s' % (self.name, url))
             self.completed_queue.add(url)
@@ -132,7 +133,7 @@ class Spider:
         if r.status_code == 404:
             print('No robots.txt')
             return
-        
+            
         user_agent = True
         for line in r.text.lower().split('\n'):
             if line.startswith('user-agent'):
