@@ -83,7 +83,7 @@ class Spider:
         """ Finished crawling, inserts result to DB """
         domainExists = self.db.query_exists(query.QUERY_GET_CRAWLED_DOMAIN(), (self.domain, ))
         if domainExists:
-            dbCrawled = self.db.query_commit(query.QUERY_UPDATE_TABLE_CRAWLED(), (len(self.new_domains), self.crawled_urls, datetime.now(), self.domain))
+            dbCrawled = self.db.query_commit(query.QUERY_UPDATE_TABLE_CRAWLED(), (len(self.new_domains), self.crawled_urls, 1, datetime.now(), self.domain))
             if dbCrawled:
                 self.log.log(logger.LogLevel.INFO, 'Added crawl stats to DB from: %s' % self.name)
             else:

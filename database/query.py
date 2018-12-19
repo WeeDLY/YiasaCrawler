@@ -20,6 +20,7 @@ def QUERY_UPDATE_TABLE_CRAWLED():
     return """ UPDATE crawled SET
                 urls = ?,
                 amount_crawled = ?,
+                finished_crawling = ?
                 last_crawled = ?
                 WHERE domain = ? """
 
@@ -30,15 +31,20 @@ def QUERY_GET_CRAWLED_DOMAIN():
 """ INSERT queries """
 def QUERY_INSERT_TABLE_CRAWLED():
     """ inserts into 'crawled'"""
-    return """INSERT INTO crawled(domain, urls, amount_crawled, last_crawled)
-                VALUES(?, ?, ?, ?)
+    return """INSERT INTO crawled(domain, urls, amount_crawled, finished_crawling, last_crawled)
+                VALUES(?, ?, ?, ?, ?)
     """
 
 def QUERY_INSERT_TABLE_CRAWL_HISTORY():
     """ inserts OR REPLACES into 'crawl_history' 
         args: domain, url, status_code, url, last_crawled
     """
-    return "INSERT OR REPLACE INTO crawl_history(id, url, status_code, amount_crawled, last_crawled) VALUES((SELECT rowid FROM crawled WHERE domain = ?), ?, ?, (SELECT CASE WHEN COUNT(1) > 0 THEN amount_crawled+1 ELSE 1 END AS [Value] FROM crawl_history WHERE url = ?), ?)"
+    return """INSERT OR REPLACE INTO crawl_history(id, url, status_code, amount_crawled, last_crawled)
+    VALUES((SELECT rowid FROM crawled WHERE domain = ?),
+    ?,
+    ?,
+    (SELECT CASE WHEN COUNT(1) > 0 THEN amount_crawled+1 ELSE 1 END AS [Value] FROM crawl_history WHERE url = ?),
+    ?)"""
 
 def QUERY_TABLE_EXISTS():
     """ Query that checks if a table exists in the database """
@@ -57,6 +63,7 @@ def QUERY_CREATE_TABLE_CRAWLED():
                 domain text,
                 urls int,
                 amount_crawled int,
+                finished_crawling boolean,
                 last_crawled date
             )"""
 

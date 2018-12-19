@@ -35,4 +35,5 @@ class Handler:
     def setup_db_row(self, domain):
         domainExists = self.db.query_exists(query.QUERY_GET_CRAWLED_DOMAIN(), (domain, ))
         if domainExists is False:
-            self.db.query_commit(query.QUERY_INSERT_TABLE_CRAWLED(), (domain, 0, 0, 'NULL'))
+            self.db.query_commit(query.QUERY_INSERT_TABLE_CRAWLED(), (domain, 0, 0, 0, 'NULL',))
+            input()
