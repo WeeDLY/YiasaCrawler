@@ -35,9 +35,10 @@ def QUERY_INSERT_TABLE_CRAWLED():
     """
 
 def QUERY_INSERT_TABLE_CRAWL_HISTORY():
-    """ inserts into 'crawl_history' """
-    return """ INSERT INTO crawl_history(id, url, status_code, amount_crawled, last_crawled)
-                VALUES((SELECT rowid FROM crawled WHERE DOMAIN = ?), ?, ?, ?, ?) """
+    """ inserts OR REPLACES into 'crawl_history' 
+        args: domain, url, status_code, url, last_crawled
+    """
+    return "INSERT OR REPLACE INTO crawl_history(id, url, status_code, amount_crawled, last_crawled) VALUES((SELECT rowid FROM crawled WHERE domain = ?), ?, ?, (SELECT CASE WHEN COUNT(1) > 0 THEN amount_crawled+1 ELSE 1 END AS [Value] FROM crawl_history WHERE url = ?), ?)"
 
 def QUERY_TABLE_EXISTS():
     """ Query that checks if a table exists in the database """

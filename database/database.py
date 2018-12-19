@@ -89,7 +89,7 @@ class Database():
                 c.execute(q)
             else:
                 c.execute(q, param)
-            self.log.log(logger.LogLevel.DEBUG, 'database.query_commit: %s | %s' % (q, param), True)
+            self.log.log(logger.LogLevel.DEBUG, 'database.query_commit: %s | %s' % (q, param))
             self.connection.commit()
             return True
         except Exception as e:

@@ -61,11 +61,12 @@ class Spider:
     def crawl(self):
         """ Iterate through the entire queue stack """
         while self.queue and self.crawled_urls < self.max_urls:
+            if(self.crawled_urls % 10 == 0):
+                self.log.log(logger.LogLevel.INFO, 'Thread:%s | New: %d | %d/%d' % (self.name, len(self.new_domains), self.crawled_urls, self.max_urls))
             url = self.queue.pop()
-            self.log.log(logger.LogLevel.DEBUG, 'ThreadId: %s, crawling: %s' % (self.name, url))
             self.completed_queue.add(url)
             req = self.request(url)
-            crawlHistory = self.db.query_commit(query.QUERY_INSERT_TABLE_CRAWL_HISTORY(), (self.domain, url, req.status_code, 0, datetime.now()))
+            crawlHistory = self.db.query_commit(query.QUERY_INSERT_TABLE_CRAWL_HISTORY(), (self.domain, url, req.status_code, url, datetime.now()))
             if crawlHistory is False:
                 self.log.log(logger.LogLevel.WARNING, 'Unable to insert into crawl_history: %s' % url)
 
