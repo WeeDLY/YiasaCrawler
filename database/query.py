@@ -29,6 +29,12 @@ def QUERY_GET_CRAWLED_DOMAIN():
     return """ SELECT * FROM crawled WHERE domain = ? """
 
 """ INSERT queries """
+def QUERY_INSERT_TABLE_CRAWL_QUEUE():
+    """ Insert or ignore into table 'crawl_queue' """
+    return """ INSERT OR IGNORE INTO crawl_queue(domain, priority, added)
+                VALUES(?, ?, ?)
+    """
+
 def QUERY_INSERT_TABLE_CRAWLED():
     """ inserts into 'crawled'"""
     return """INSERT INTO crawled(domain, urls, amount_crawled, finished_crawling, last_crawled)
