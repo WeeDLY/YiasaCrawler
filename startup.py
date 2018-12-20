@@ -19,9 +19,7 @@ def startup(args):
     if args.debug:
         debug.debug(log, db)
     else:
-        #handler.Handler.threads = args.threads
-        main.start(log, db)
-
+        main.start(log, db, args)
 
 def check_database(log):
     """ Checks that database is up and running correctly """
@@ -39,7 +37,7 @@ def parse_arguments():
     """ Parse args from user """
     parser = argparse.ArgumentParser()
     parser.add_argument('-d', '--debug', action='store_true', default=False)
-    parser.add_argument('-t', '--threads', type=int)
+    parser.add_argument('-t', '--threads', type=int, default=3)
     args = parser.parse_args()
     startup(args)
 

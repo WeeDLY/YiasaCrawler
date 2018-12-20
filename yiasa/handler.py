@@ -1,4 +1,5 @@
 import threading
+from datetime import timedelta
 import sys
 sys.path.append('..')
 
@@ -6,6 +7,25 @@ import database.query as query
 import util.logger as logger
 import yiasa.spider as spider
 from yiasa.spider import Spider
+
+class HandlerSettings():
+    queue = list()
+    spiderThreadList = list()
+    spiderList = list()
+    robots = True
+
+    def __init__(self):
+        self._threads = 3
+
+    def get_threads(self):
+        return self._threads
+        
+    def set_threads(self, value):
+        self._threads = value
+    
+    def del_threads(self):
+        del self._threads
+    threads = property(get_threads, set_threads, del_threads, 3)
 
 class Handler:
     def __init__(self, log, db, settings):

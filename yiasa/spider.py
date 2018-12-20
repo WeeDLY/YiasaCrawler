@@ -2,7 +2,7 @@ from bs4 import BeautifulSoup
 import requests
 import re, time
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
 sys.path.append('..')
 
 import util.logger as logger
@@ -36,7 +36,8 @@ class Spider:
         self.crawled_urls = 0
         self.robots = {"disallow":[], "allow":[]}
         self.crawl_delay = 0
-        self.max_urls = 100 # Max amount of urls to be crawled
+        self.max_urls = 250 # Max amount of urls to be crawled
+        self.start_time = None
 
     def to_string(self):
         return 'Name:%s @domain: %s' % (self.name, self.domain)
@@ -50,7 +51,7 @@ class Spider:
         soup = BeautifulSoup(req.text, 'html.parser')
         valid_urls = self.extract_url(soup)
         self.add_to_queue(valid_urls)
-        print(valid_urls) # TODO: For debugging only
+        self.start_time = datetime.now()
         self.crawl()
     
     def request(self, url):
@@ -60,9 +61,11 @@ class Spider:
 
     def crawl(self):
         """ Iterate through the entire queue stack """
+        last_time = self.start_time
         while self.queue and self.crawled_urls < self.max_urls:
-            if(self.crawled_urls % 10 == 0):
+            if(last_time + timedelta(minutes=1) < datetime.now()):
                 self.log.log(logger.LogLevel.INFO, 'Thread:%s | New: %d | %d/%d' % (self.name, len(self.new_domains), self.crawled_urls, self.max_urls))
+                last_time = datetime.now()
             url = self.queue.pop()
             self.completed_queue.add(url)
             req = self.request(url)
