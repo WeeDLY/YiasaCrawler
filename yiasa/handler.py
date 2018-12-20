@@ -8,26 +8,22 @@ import yiasa.spider as spider
 from yiasa.spider import Spider
 
 class Handler:
-    queue = list()
-    spiderThreadList = list()
-    spiderList = list()
-    threads = 3
-    robots = True
-    def __init__(self, log, db):
+    def __init__(self, log, db, settings):
         self.log = log
         self.db = db
+        self.settings = settings
         self.threadId = 0
-    
+
     def start_threads(self):
         started = 0
-        while len(self.spiderThreadList) < self.threads and len(self.queue) > 0:
-            domain = self.queue.pop()
+        while len(self.settings.spiderThreadList) < self.settings.get_threads() and len(self.settings.queue) > 0:
+            domain = self.settings.queue.pop()
             self.setup_db_row(domain)
 
             s = Spider(self.log, self.db, self.threadId, domain)
             t = threading.Thread(target=s.start_crawl, name=self.threadId)
             t.daemon = True
-            self.spiderThreadList.append(t)
+            self.settings.spiderThreadList.append(t)
             t.start()
             self.threadId += 1
             self.log.log(logger.LogLevel.INFO, 'Started new spider: %s' % s.to_string())

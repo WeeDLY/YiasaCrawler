@@ -50,7 +50,7 @@ class Spider:
         soup = BeautifulSoup(req.text, 'html.parser')
         valid_urls = self.extract_url(soup)
         self.add_to_queue(valid_urls)
-        print(valid_urls)
+        print(valid_urls) # TODO: For debugging only
         self.crawl()
     
     def request(self, url):
