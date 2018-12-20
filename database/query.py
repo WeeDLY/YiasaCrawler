@@ -15,6 +15,21 @@ def QUERY_GET_TABLE_CRAWL_INFORMATION():
     return """ SELECT rowid, * FROM crawl_information"""
 
 """ GET queries """
+def QUERY_GET_CRAWLED_DOMAIN():
+    """ check if crawled is already in database """
+    return """ SELECT * FROM crawled WHERE domain = ? """
+
+def QUERY_GET_CRAWL_QUEUE():
+    """ returns urls that should be queued """
+    return """ SELECT domain FROM crawl_queue ORDER BY priority DESC, added ASC LIMIT ? """
+
+""" INSERT queries """
+def QUERY_INSERT_TABLE_CRAWL_QUEUE():
+    """ Insert or ignore into table 'crawl_queue' """
+    return """ INSERT OR IGNORE INTO crawl_queue(domain, priority, added)
+                VALUES(?, ?, ?)
+    """
+
 def QUERY_UPDATE_TABLE_CRAWLED():
     """ Updates table 'crawled' based on domain """
     return """ UPDATE crawled SET
@@ -23,17 +38,6 @@ def QUERY_UPDATE_TABLE_CRAWLED():
                 finished_crawling = ?
                 last_crawled = ?
                 WHERE domain = ? """
-
-def QUERY_GET_CRAWLED_DOMAIN():
-    """ check if crawled is already in database """
-    return """ SELECT * FROM crawled WHERE domain = ? """
-
-""" INSERT queries """
-def QUERY_INSERT_TABLE_CRAWL_QUEUE():
-    """ Insert or ignore into table 'crawl_queue' """
-    return """ INSERT OR IGNORE INTO crawl_queue(domain, priority, added)
-                VALUES(?, ?, ?)
-    """
 
 def QUERY_INSERT_TABLE_CRAWLED():
     """ inserts into 'crawled'"""

@@ -17,9 +17,15 @@ def start(log, db, args):
         log.log(logger.LogLevel.ERROR, 'Was unable to fill database with default urls. Exiting..')
         sys.exit()
 
-    print('starting')
-    #spider_handler = handler.Handler(log, db, settings)
-    #spider_handler.start_threads()
+    queue_urls = db.query_get(query.QUERY_GET_CRAWL_QUEUE(), (args.threads * 2, ))
+    queue = list()
+    for url in queue_urls:
+        queue.append(url[0])
+    queue.reverse()
+    settings.queue.append(queue)
+
+    spider_handler = handler.Handler(log, db, settings)
+    spider_handler.start_threads()
 
     while True:
         time.sleep(5*2)
@@ -28,11 +34,10 @@ def start(log, db, args):
 def fill_database(log, db):
     """ Function that fills database with 'starting' urls """
     default_urls = [
-        'https://www.reddit.com',
+        'https://www.google.com',
         'https://www.youtube.com',
         'https://www.facebook.com',
         'http://lichess.org',
-        'https://www.google.com',
         'https://www.wikipedia.org',
         'https://imgur.com',
         'https://www.yahoo.com',
@@ -47,7 +52,8 @@ def fill_database(log, db):
         'https://www.msn.com',
         'https://weather.com',
         'https://www.twitch.tv',
-        'http://www.bbc.com'
+        'http://www.bbc.com',
+        'https://www.reddit.com'
     ]
     for url in default_urls:
         insertedDefault = db.query_commit(query.QUERY_INSERT_TABLE_CRAWL_QUEUE(), (url, 0, datetime.now()))

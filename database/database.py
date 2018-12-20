@@ -49,6 +49,7 @@ class Database():
         except Exception as e:
             self.log.log(logger.LogLevel.ERROR, "Exception when dumping database: %s" % e)
 
+
     def check_table(self, table, createTableQuery, maxAttempts=3):
         """ Checks and/or creates an individual table """
         tableSetUp = False
@@ -65,6 +66,17 @@ class Database():
         if tableSetUp is False:
             self.log.log(logger.LogLevel.CRITICAL, 'Could not create table: %s' % table)
         return tableSetUp
+
+    def query_get(self, q, param=None):
+        """ Query that fetches results """
+        try:
+            c = self.connection.cursor()
+            c.execute(q, param)
+            self.log.log(logger.LogLevel.DEBUG, 'database.query_get: %s | %s' % (q, param))            
+            return c.fetchall()
+        except Exception as e:
+            self.log.log(logger.LogLevel.ERROR, 'database.query_get: %s. %s | %s' % (e, q, param))
+            return None
 
     def query_exists(self, q, param=None):
         """ checks if the query yields a result """
