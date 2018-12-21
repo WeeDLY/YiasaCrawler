@@ -62,6 +62,12 @@ def QUERY_INSERT_TABLE_CRAWL_HISTORY():
     (SELECT CASE WHEN COUNT(1) > 0 THEN amount_crawled+1 ELSE 1 END AS [Value] FROM crawl_history WHERE url = ?),
     ?)"""
 
+""" DELETE queries """
+def QUERY_DELETE_CRAWL_QUEUE():
+    """ Deletes a domain from 'crawl_queue' """
+    return """ DELETE FROM crawl_queue
+                WHERE domain = ? and started = 1 """
+
 def QUERY_TABLE_EXISTS():
     """ Query that checks if a table exists in the database """
     return "SELECT name FROM sqlite_master WHERE type='table' AND name=?"

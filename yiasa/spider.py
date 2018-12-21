@@ -93,6 +93,13 @@ class Spider:
                 self.log.log(logger.LogLevel.WARNING, 'Unable to insert crawl stats to DB from: %s' % self.name)
         else:
             self.log.log(logger.LogLevel.CRITICAL, 'Domain: %s was finshed crawling, but does not exist in DB!' % self.domain)
+        
+        # Remove the domain from the 'crawl_queue' table
+        domainRemoveQueue = self.db.query_commit(query.QUERY_DELETE_CRAWL_QUEUE(), (self.domain, ))
+        if domainRemoveQueue:
+            self.log.log(logger.LogLevel.INFO, "Removed %s from 'crawl_queue'" % self.domain)
+        else:
+            self.log.log(logger.LogLevel.ERROR, "Unable to remove %s from 'crawl_queue'" % self.domain)
 
     
     def add_to_queue(self, urls):
