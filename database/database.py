@@ -51,7 +51,6 @@ class Database():
             print('%s)' % description[:len(description) - 2])
             for row in rows:
                 print(row)
-            print(c.description)
         except Exception as e:
             self.log.log(logger.LogLevel.ERROR, "Exception when dumping database: %s" % e)
 
