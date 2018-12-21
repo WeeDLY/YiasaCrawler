@@ -44,8 +44,14 @@ class Database():
     def table_dump(self, query):
         try:
             c = self.connection.cursor()
-            for row in c.execute(query):
+            rows = c.execute(query)
+            description = "("
+            for desc in c.description:
+                description += '%s, ' % desc[0]
+            print('%s)' % description[:len(description) - 2])
+            for row in rows:
                 print(row)
+            print(c.description)
         except Exception as e:
             self.log.log(logger.LogLevel.ERROR, "Exception when dumping database: %s" % e)
 
