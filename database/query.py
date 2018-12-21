@@ -15,9 +15,13 @@ def QUERY_GET_TABLE_CRAWL_INFORMATION():
     return """ SELECT rowid, * FROM crawl_information"""
 
 """ GET queries """
-def QUERY_GET_CRAWLED_DOMAIN():
-    """ check if crawled is already in database """
-    return """ SELECT * FROM crawled WHERE domain = ? """
+def QUERY_GET_DOMAIN_IN_DB():
+    """ Checks if a domain is in 'crawled' or 'crawl_queue' """
+    return """ SELECT 1 FROM (
+                SELECT domain FROM crawled
+                UNION ALL
+                SELECT domain FROM crawl_queue)
+                WHERE domain = ? """
 
 def QUERY_GET_CRAWL_QUEUE():
     """ returns urls that should be queued """
@@ -41,8 +45,8 @@ def QUERY_UPDATE_TABLE_CRAWLED():
     return """ UPDATE crawled SET
                 urls = ?,
                 amount_crawled = ?,
-                finished_crawling = ?
-                last_crawled = ?
+                finished_crawling = ?,
+                last_crawled = ?,
                 WHERE domain = ? """
 
 def QUERY_INSERT_TABLE_CRAWLED():

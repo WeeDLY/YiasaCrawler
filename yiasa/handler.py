@@ -49,7 +49,6 @@ class Handler:
             self.log.log(logger.LogLevel.INFO, 'Started new spider: %s' % s.to_string())
     
     def setup_db_row(self, domain):
-        domainExists = self.db.query_exists(query.QUERY_GET_CRAWLED_DOMAIN(), (domain, ))
+        domainExists = self.db.query_exists(query.QUERY_GET_DOMAIN_IN_DB(), (domain, ))
         if domainExists is False:
             self.db.query_commit(query.QUERY_INSERT_TABLE_CRAWLED(), (domain, 0, 0, 0, 'NULL',))
-            input()

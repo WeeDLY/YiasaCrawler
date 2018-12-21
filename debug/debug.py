@@ -17,6 +17,9 @@ def database(log, db):
         elif cmd == 'dump':
             q = input('database-debug: dump$ ')
             db.table_dump(q)
+        elif cmd == 'exists':
+            q = input('database-debug: exists$ ')
+            print(db.query_exists(q))
         elif cmd == 'dump database' or cmd == 'dump db':
             db.database_dump()
         elif cmd == 'dump crawled':

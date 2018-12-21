@@ -36,7 +36,7 @@ class Spider:
         self.crawled_urls = 0
         self.robots = {"disallow":[], "allow":[]}
         self.crawl_delay = 0
-        self.max_urls = 250 # Max amount of urls to be crawled
+        self.max_urls = 2 # Max amount of urls to be crawled
         self.start_time = None
 
     def to_string(self):
@@ -84,9 +84,9 @@ class Spider:
         
     def finish_crawl(self):
         """ Finished crawling, inserts result to DB """
-        domainExists = self.db.query_exists(query.QUERY_GET_CRAWLED_DOMAIN(), (self.domain, ))
+        domainExists = self.db.query_exists(query.QUERY_GET_DOMAIN_IN_DB(), (self.domain, ))
         if domainExists:
-            dbCrawled = self.db.query_commit(query.QUERY_UPDATE_TABLE_CRAWLED(), (len(self.new_domains), self.crawled_urls, 1, datetime.now(), self.domain))
+            dbCrawled = self.db.query_commit(query.QUERY_UPDATE_TABLE_CRAWLED(), (len(self.new_domains), self.crawled_urls, 1, datetime.now(), self.domain, ))
             if dbCrawled:
                 self.log.log(logger.LogLevel.INFO, 'Added crawl stats to DB from: %s' % self.name)
             else:
