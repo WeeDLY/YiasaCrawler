@@ -36,7 +36,7 @@ class Spider:
         self.crawled_urls = 0
         self.robots = {"disallow":[], "allow":[]}
         self.crawl_delay = 0
-        self.max_urls = 2 # Max amount of urls to be crawled
+        self.max_urls = 200 # Max amount of urls to be crawled
         self.start_time = None
 
     def to_string(self):

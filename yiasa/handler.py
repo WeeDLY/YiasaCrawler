@@ -1,3 +1,4 @@
+import time
 import threading
 from datetime import timedelta, datetime
 import sys
@@ -13,9 +14,9 @@ class HandlerSettings():
     spiderThreadList = list()
     spiderList = list()
     robots = True
-
     def __init__(self):
         self._threads = 3
+        self._killList = list()
 
     def get_threads(self):
         return self._threads
@@ -25,6 +26,18 @@ class HandlerSettings():
     
     def del_threads(self):
         del self._threads
+    
+    def get_killList(self):
+        return self._killList
+        
+    def set_killList(self, value):
+        print(self._killList)
+        self._killList.append(value)
+    
+    def del_killList(self):
+        del self._killList
+    
+    killList = property(get_killList, set_killList, del_killList, 3)
     threads = property(get_threads, set_threads, del_threads, 3)
 
 class Handler:
@@ -33,6 +46,18 @@ class Handler:
         self.db = db
         self.settings = settings
         self.threadId = 0
+
+    def run(self):
+        while True:
+            time.sleep(5)
+            print('handler_thread')
+            print(len(self.settings.spiderThreadList))
+            for thread in self.settings.spiderThreadList:
+                alive = thread.isAlive()
+                if alive is False:
+                    threadId = int(thread.name.replace('Thread-', ''))
+                    print('Thread: %d is finished' % threadId)
+                    self.get_spider_thread_status(threadId)
 
     def start_threads(self):
         started = 0
@@ -56,7 +81,7 @@ class Handler:
 
     def get_spider_thread_status(self, threadId):
         """ Gets information about a spider thread, based on threadId """
-        name = self.settings.spiderLiast[threadId].name
+        name = self.settings.spiderList[threadId].name
         start_time = self.settings.spiderList[threadId].start_time
         crawled_urls = self.settings.spiderList[threadId].crawled_urls
         queue = self.settings.spiderList[threadId].queue
@@ -68,6 +93,12 @@ class Handler:
         print(queue)
         print(new_domains)
         print(crawl_delay)
+    
+    def kill_thread(self, threadId):
+        """ kills a thread, this is called from spider.py """
+        thread = spiderThreadList[threadId]
+        thread.join()
+        print(thread.is_alive())
 
     def setup_row_crawled(self, domain):
         """ This should make sure that the domain in question already exists in table 'crawled' """

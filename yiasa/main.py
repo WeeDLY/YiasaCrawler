@@ -1,3 +1,4 @@
+import threading
 import time
 from datetime import datetime
 import sys
@@ -30,6 +31,10 @@ def start(log, db, args):
     spider_handler = handler.Handler(log, db, settings)
     spider_handler.start_threads()
 
+    
+    handler_thread = threading.Thread(target=spider_handler.run)
+    handler_thread.daemon = True
+    handler_thread.start()
     while True:
         time.sleep(5*2)
         print('main_thread')
