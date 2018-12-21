@@ -55,9 +55,17 @@ class Spider:
         self.crawl()
     
     def request(self, url):
-        """ sends a http request to url """
+        """ sends a http request to url.
+            Also adds to table 'crawl_history' """
         self.crawled_urls += 1
-        return requests.get(url)
+        req = requests.get(url)
+        
+        crawlHistory = self.db.query_commit(query.QUERY_INSERT_TABLE_CRAWL_HISTORY(), (self.domain, url, req.status_code, url, datetime.now(), ))
+        if crawlHistory:
+            self.log.log(logger.LogLevel.DEBUG, 'Inserted to crawl_history: %s' % url)
+        else:
+            self.log.log(logger.LogLevel.WARNING, 'Failed to insert to crawl_history: %s' % url)
+        return req
 
     def crawl(self):
         """ Iterate through the entire queue stack """
@@ -69,9 +77,6 @@ class Spider:
             url = self.queue.pop()
             self.completed_queue.add(url)
             req = self.request(url)
-            self.db.query_commit(query.QUERY_INSERT_TABLE_CRAWL_HISTORY(), (self.domain, url, req.status_code, url, datetime.now(), ))
-            if crawlHistory is False:
-                self.log.log(logger.LogLevel.WARNING, 'Unable to insert into crawl_history: %s' % url)
 
             soup = BeautifulSoup(req.text, 'html.parser')
             valid_urls = self.extract_url(soup)
@@ -81,7 +86,7 @@ class Spider:
         
         # Finished crawling, insert stats to DB
         self.finish_crawl()
-        
+    
     def finish_crawl(self):
         """ Finished crawling, inserts result to DB """
         domainExists = self.db.query_exists(query.QUERY_GET_DOMAIN_IN_DB(), (self.domain, ))
