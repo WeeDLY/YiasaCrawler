@@ -105,5 +105,5 @@ class Database():
             self.connection.commit()
             return True
         except Exception as e:
-            self.log.log(logger.LogLevel.ERROR, 'database.query_commit: %s' % e)
+            self.log.log(logger.LogLevel.ERROR, 'database.query_commit: %s | %s | %s' % (e, q, param))
             return False

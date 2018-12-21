@@ -69,7 +69,7 @@ class Spider:
             url = self.queue.pop()
             self.completed_queue.add(url)
             req = self.request(url)
-            crawlHistory = self.db.query_commit(query.QUERY_INSERT_TABLE_CRAWL_HISTORY(), (self.domain, url, req.status_code, url, datetime.now()))
+            self.db.query_commit(query.QUERY_INSERT_TABLE_CRAWL_HISTORY(), (self.domain, url, req.status_code, url, datetime.now(), ))
             if crawlHistory is False:
                 self.log.log(logger.LogLevel.WARNING, 'Unable to insert into crawl_history: %s' % url)
 

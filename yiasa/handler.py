@@ -1,5 +1,5 @@
 import threading
-from datetime import timedelta
+from datetime import timedelta, datetime
 import sys
 sys.path.append('..')
 
@@ -38,7 +38,7 @@ class Handler:
         started = 0
         while len(self.settings.spiderThreadList) < self.settings.get_threads() and len(self.settings.queue) > 0:
             domain = self.settings.queue.pop()
-            self.setup_db_row(domain)
+            self.setup_row_crawled(domain)
 
             s = Spider(self.log, self.db, self.threadId, domain)
             t = threading.Thread(target=s.start_crawl, name=self.threadId)
@@ -48,7 +48,13 @@ class Handler:
             self.threadId += 1
             self.log.log(logger.LogLevel.INFO, 'Started new spider: %s' % s.to_string())
     
-    def setup_db_row(self, domain):
-        domainExists = self.db.query_exists(query.QUERY_GET_DOMAIN_IN_DB(), (domain, ))
+    def setup_row_crawled(self, domain):
+        """ This should make sure that the domain in question already exists in table 'crawled' """
+        domainExists = self.db.query_exists(query.QUERY_GET_DOMAIN_IN_CRAWLED(), (domain, ))
         if domainExists is False:
-            self.db.query_commit(query.QUERY_INSERT_TABLE_CRAWLED(), (domain, 0, 0, 0, 'NULL',))
+            self.log.log(logger.LogLevel.DEBUG, "Domain %s is not in 'crawled. Creating...'" % domain)
+            insertTableCrawled = self.db.query_commit(query.QUERY_INSERT_TABLE_CRAWLED(), (domain, 0, 0, 0, datetime.now(), ))
+            if insertTableCrawled:
+                self.log.log(logger.LogLevel.DEBUG, "Inserted %s to 'crawled'" % domain)
+            else:
+                self.log.log(logger.LogLevel.ERROR, "Error insert into 'crawled': %s" % domain)
