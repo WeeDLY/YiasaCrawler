@@ -59,7 +59,7 @@ class Spider:
             Also adds to table 'crawl_history' """
         self.crawled_urls += 1
         req = requests.get(url)
-        
+
         crawlHistory = self.db.query_commit(query.QUERY_INSERT_TABLE_CRAWL_HISTORY(), (self.domain, url, req.status_code, url, datetime.now(), ))
         if crawlHistory:
             self.log.log(logger.LogLevel.DEBUG, 'Inserted to crawl_history: %s' % url)
