@@ -21,9 +21,12 @@ def start(log, db, args):
     queue = list()
     for url in queue_urls:
         queue.append(url[0])
+        # Mark url as taken in DB
+        urlStarted = db.query_commit(query.QUERY_INSERT_CRAWL_QUEUE_STARTED(), (url[0], ))
+        if urlStarted is False:
+            log.log(logger.LogLevel.ERROR, 'Unable to mark url: %s as started in DB - crawl_queue' % url[0])
     queue.reverse()
-    settings.queue.append(queue)
-
+    settings.queue += queue
     spider_handler = handler.Handler(log, db, settings)
     spider_handler.start_threads()
 
@@ -56,7 +59,7 @@ def fill_database(log, db):
         'https://www.reddit.com'
     ]
     for url in default_urls:
-        insertedDefault = db.query_commit(query.QUERY_INSERT_TABLE_CRAWL_QUEUE(), (url, 0, datetime.now()))
+        insertedDefault = db.query_commit(query.QUERY_INSERT_TABLE_CRAWL_QUEUE(), (url, 0, 0, datetime.now()))
         if insertedDefault:
             log.log(logger.LogLevel.DEBUG, "Inserted default_url to \'crawl_queue\': %s" % url)
         else:

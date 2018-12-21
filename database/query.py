@@ -21,14 +21,20 @@ def QUERY_GET_CRAWLED_DOMAIN():
 
 def QUERY_GET_CRAWL_QUEUE():
     """ returns urls that should be queued """
-    return """ SELECT domain FROM crawl_queue ORDER BY priority DESC, added ASC LIMIT ? """
+    return """ SELECT domain FROM crawl_queue WHERE started = 0 ORDER BY priority DESC, added ASC LIMIT ? """
 
 """ INSERT queries """
 def QUERY_INSERT_TABLE_CRAWL_QUEUE():
     """ Insert or ignore into table 'crawl_queue' """
-    return """ INSERT OR IGNORE INTO crawl_queue(domain, priority, added)
-                VALUES(?, ?, ?)
+    return """ INSERT OR IGNORE INTO crawl_queue(domain, priority, started, added)
+                VALUES(?, ?, ?, ?)
     """
+
+def QUERY_INSERT_CRAWL_QUEUE_STARTED():
+    """ marks domain as 'started' in DB """
+    return """ UPDATE crawl_queue SET
+                started = 1
+                WHERE domain = ? """
 
 def QUERY_UPDATE_TABLE_CRAWLED():
     """ Updates table 'crawled' based on domain """
@@ -102,6 +108,7 @@ def QUERY_CREATE_TABLE_CRAWL_QUEUE():
     return """ CREATE TABLE crawl_queue (
                 domain text PRIMARY KEY,
                 priority int,
+                started boolean,
                 added date
         )"""
         
