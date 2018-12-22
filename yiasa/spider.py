@@ -65,7 +65,6 @@ class Spider:
         req = requests.get(url)
 
         with Spider.history_lock:
-            print('inside Spider.history_lock')
             crawlHistory = self.db.query_commit(query.QUERY_INSERT_TABLE_CRAWL_HISTORY(), (self.domain, url, req.status_code, url, datetime.now(), ))
         if crawlHistory:
             self.log.log(logger.LogLevel.DEBUG, 'Inserted to crawl_history: %s' % url)
@@ -95,7 +94,6 @@ class Spider:
     
     def finish_crawl(self):
         with Spider.finish_lock:
-            print('Inside Spider.finish_lock')
             """ Finished crawling, inserts result to DB """
             domainExists = self.db.query_exists(query.QUERY_GET_DOMAIN_IN_DB(), (self.domain, ))
             if domainExists:
