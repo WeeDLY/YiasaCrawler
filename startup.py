@@ -37,6 +37,7 @@ def parse_arguments():
     """ Parse args from user """
     parser = argparse.ArgumentParser()
     parser.add_argument('-d', '--debug', action='store_true', default=False)
+    parser.add_argument('-s', '--server', action='store_true', default=False)
     parser.add_argument('-t', '--threads', type=int, default=3)
     args = parser.parse_args()
     startup(args)
