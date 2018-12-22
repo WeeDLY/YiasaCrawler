@@ -38,7 +38,6 @@ def start(log, db, args):
     handler_thread.start()
     while True:
         time.sleep(5*2)
-        print('main_thread')
 
 def fill_database(log, db):
     """ Function that fills database with 'starting' urls """

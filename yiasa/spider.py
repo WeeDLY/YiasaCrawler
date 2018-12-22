@@ -86,7 +86,6 @@ class Spider:
             soup = BeautifulSoup(req.text, 'html.parser')
             valid_urls = self.extract_url(soup)
             self.add_to_queue(valid_urls)
-            #self.log.log(logger.LogLevel.DEBUG, 'CrawlId: %s, Crawled: %d, queue: %d, completed_queue: %d, new_domains: %d' % (self.name, self.crawled_urls, len(self.queue), len(self.completed_queue), len(self.new_domains)))
             time.sleep(self.crawl_delay)
         
         # Finished crawling, insert stats to DB
