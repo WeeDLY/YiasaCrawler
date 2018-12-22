@@ -1,5 +1,4 @@
 from bs4 import BeautifulSoup
-from threading import Lock
 from urllib.parse import urlparse
 import requests
 import re, time
@@ -20,8 +19,6 @@ class Spider:
         r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})' # ...or ip
         r'(?::\d+)?' # optional port
         r'(?:/?|[/?]\S+)$', re.IGNORECASE)
-    finish_lock = Lock()
-    history_lock = Lock()
 
     @staticmethod
     def print_queue():
@@ -64,8 +61,7 @@ class Spider:
         self.crawled_urls += 1
         req = requests.get(url)
 
-        with Spider.history_lock:
-            crawlHistory = self.db.query_commit(query.QUERY_INSERT_TABLE_CRAWL_HISTORY(), (self.domain, url, req.status_code, url, datetime.now(), ))
+        crawlHistory = self.db.query_execute(query.QUERY_INSERT_TABLE_CRAWL_HISTORY(), (self.domain, url, req.status_code, url, datetime.now(), ))
         if crawlHistory:
             self.log.log(logger.LogLevel.DEBUG, 'Inserted to crawl_history: %s' % url)
         else:
@@ -92,31 +88,33 @@ class Spider:
         self.finish_crawl()
     
     def finish_crawl(self):
-        with Spider.finish_lock:
-            """ Finished crawling, inserts result to DB """
-            domainExists = self.db.query_exists(query.QUERY_GET_DOMAIN_IN_DB(), (self.domain, ))
-            if domainExists:
-                dbCrawled = self.db.query_commit(query.QUERY_UPDATE_TABLE_CRAWLED(), (len(self.new_domains), self.crawled_urls, 1, datetime.now(), self.domain, ))
-                if dbCrawled:
-                    self.log.log(logger.LogLevel.INFO, 'Added crawl stats to DB from: %s' % self.name)
-                else:
-                    self.log.log(logger.LogLevel.WARNING, 'Unable to insert crawl stats to DB from: %s' % self.name)
+        """ Finished crawling, inserts result to DB """
+        domainExists = self.db.query_exists(query.QUERY_GET_DOMAIN_IN_DB(), (self.domain, ))
+        if domainExists:
+            dbCrawled = self.db.query_execute(query.QUERY_UPDATE_TABLE_CRAWLED(), (len(self.new_domains), self.crawled_urls, 1, datetime.now(), self.domain, ))
+            if dbCrawled:
+                self.log.log(logger.LogLevel.INFO, 'Added crawl stats to DB from: %s' % self.name)
             else:
-                self.log.log(logger.LogLevel.CRITICAL, 'Domain: %s was finshed crawling, but does not exist in DB!' % self.domain)
-            
-            # Remove the domain from the 'crawl_queue' table
-            domainRemoveQueue = self.db.query_commit(query.QUERY_DELETE_CRAWL_QUEUE(), (self.domain, ))
-            if domainRemoveQueue:
-                self.log.log(logger.LogLevel.INFO, "Removed %s from 'crawl_queue'" % self.domain)
+                self.log.log(logger.LogLevel.WARNING, 'Unable to insert crawl stats to DB from: %s' % self.name)
+        else:
+            self.log.log(logger.LogLevel.CRITICAL, 'Domain: %s was finshed crawling, but does not exist in DB!' % self.domain)
+        
+        # Remove the domain from the 'crawl_queue' table
+        domainRemoveQueue = self.db.query_execute(query.QUERY_DELETE_CRAWL_QUEUE(), (self.domain, ))
+        if domainRemoveQueue:
+            self.log.log(logger.LogLevel.INFO, "Removed %s from 'crawl_queue'" % self.domain)
+        else:
+            self.log.log(logger.LogLevel.ERROR, "Unable to remove %s from 'crawl_queue'" % self.domain)
+        
+        for domain in self.new_domains:
+            domainDB = self.db.query_execute(query.QUERY_INSERT_TABLE_CRAWL_QUEUE(), (domain, 0, 0, datetime.now()))
+            if domainDB:
+                self.log.log(logger.LogLevel.DEBUG, "Inserted to add 'crawl_queue': %s" % domain)
             else:
-                self.log.log(logger.LogLevel.ERROR, "Unable to remove %s from 'crawl_queue'" % self.domain)
-            
-            for domain in self.new_domains:
-                domainDB = self.db.query_commit(query.QUERY_INSERT_TABLE_CRAWL_QUEUE(), (domain, 0, 0, datetime.now()))
-                if domainDB:
-                    self.log.log(logger.LogLevel.DEBUG, "Inserted to add 'crawl_queue': %s" % domain)
-                else:
-                    self.log.log(logger.LogLevel.WARNING, "Failed to add 'crawl_queue': %s" % domain)
+                self.log.log(logger.LogLevel.WARNING, "Failed to add 'crawl_queue': %s" % domain)
+        
+        # Push everything to database
+        self.db.commit()
 
     
     def add_to_queue(self, urls):

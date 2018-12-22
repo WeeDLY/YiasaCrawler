@@ -1,3 +1,4 @@
+from threading import Lock
 import sqlite3
 import sys
 sys.path.append('..')
@@ -9,6 +10,7 @@ class Database():
         self.database_file = database_file
         self.connection = sqlite3.connect(self.database_file, check_same_thread=False)
         self.log = log
+        self.lock = Lock()
     
     def check_database(self):
         """ Checks and/or creates the database tables for Yiasa to run """
@@ -64,7 +66,7 @@ class Database():
             tableExists = self.query_exists(query.QUERY_TABLE_EXISTS(), (table, ))
             if tableExists is False:
                 self.log.log(logger.LogLevel.INFO, 'Creating table(%d): %s' % (i, table))
-                self.query_commit(createTableQuery)
+                self.query_execute(createTableQuery)
             else:
                 return True
             i += 1
@@ -98,7 +100,7 @@ class Database():
             self.log.log(logger.LogLevel.ERROR, 'database.query_exists: %s. %s | %s' % (e, q, param))
             return False
 
-    def query_commit(self, q, param=None):
+    def query_execute(self, q, param=None):
         """ Executes a query, returns True if executed, otherwise False """
         try:
             c = self.connection.cursor()
@@ -106,9 +108,16 @@ class Database():
                 c.execute(q)
             else:
                 c.execute(q, param)
-            self.log.log(logger.LogLevel.DEBUG, 'database.query_commit: %s | %s' % (q, param))
-            self.connection.commit()
+            self.log.log(logger.LogLevel.DEBUG, 'database.query_execute: %s | %s' % (q, param))
             return True
         except Exception as e:
-            self.log.log(logger.LogLevel.ERROR, 'database.query_commit: %s | %s | %s' % (e, q, param))
+            self.log.log(logger.LogLevel.ERROR, 'database.query_execute: %s | %s | %s' % (e, q, param))
             return False
+    
+    def commit(self):
+        try:
+            with self.lock:
+                self.connection.commit()
+                self.log.log(logger.LogLevel.DEBUG, 'Database was commited')
+        except Exception as e:
+            self.log.log(logger.LogLevel.CRITICAL, 'Failed to commit database: %s' % e)

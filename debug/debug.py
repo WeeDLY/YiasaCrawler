@@ -11,15 +11,18 @@ def database(log, db):
         cmd = input('database-debug$ ')
         if cmd == 'q' or cmd == 'e':
             debug(log, db)
-        elif cmd == 'commit':
-            q = input('database-debug: commit$ ')
-            db.query_commit(q)
+        elif cmd == 'query':
+            q = input('database-debug: query$ ')
+            db.query_execute(q)
         elif cmd == 'dump':
             q = input('database-debug: dump$ ')
             db.table_dump(q)
         elif cmd == 'exists':
             q = input('database-debug: exists$ ')
             print(db.query_exists(q))
+        elif cmd == 'commit':
+            db.commit()
+            print('Commited changes')
         elif cmd == 'dump database' or cmd == 'dump db':
             db.database_dump()
         elif cmd == 'dump crawled':

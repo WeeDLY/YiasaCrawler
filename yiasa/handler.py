@@ -34,7 +34,6 @@ class Handler:
         self.db = db
         self.settings = settings
         self.threadId = 0
-        self.lock = threading.Lock()
 
     def run(self):
         self.fill_queue()
@@ -88,8 +87,7 @@ class Handler:
     def start_spider(self):
         """ Starts a spider thread """
         domain = self.settings.queue.pop()
-        with self.lock:
-            self.setup_row_crawled(domain)
+        self.setup_row_crawled(domain)
 
         # Create spider object
         s = Spider(self.log, self.db, self.threadId, domain)
@@ -127,11 +125,11 @@ class Handler:
         tempQueue = list()
         for url in urls:
             tempQueue.append(url[0])
+            
             # Marks url taken in DB. TODO: improve on this, by marking them all at the same time afterwards.
-            with self.lock:
-                urlStarted = self.db.query_commit(query.QUERY_INSERT_CRAWL_QUEUE_STARTED(), (url[0], ))
-                if urlStarted is False:
-                    self.log.log(logger.LogLevel.ERROR, 'Unable to mark url: %s as started in DB - crawl_queue' % url[0])
+            urlStarted = self.db.query_execute(query.QUERY_INSERT_CRAWL_QUEUE_STARTED(), (url[0], ))
+            if urlStarted is False:
+                self.log.log(logger.LogLevel.ERROR, 'Unable to mark url: %s as started in DB - crawl_queue' % url[0])
         tempQueue.reverse()
         self.settings.queue += tempQueue
         self.log.log(logger.LogLevel.DEBUG, 'Added %d urls to queue' % amount)
@@ -141,7 +139,7 @@ class Handler:
         domainExists = self.db.query_exists(query.QUERY_GET_DOMAIN_IN_CRAWLED(), (domain, ))
         if domainExists is False:
             self.log.log(logger.LogLevel.DEBUG, "Domain %s is not in 'crawled. Creating...'" % domain)
-            insertTableCrawled = self.db.query_commit(query.QUERY_INSERT_TABLE_CRAWLED(), (domain, 0, 0, 0, datetime.now(), ))
+            insertTableCrawled = self.db.query_execute(query.QUERY_INSERT_TABLE_CRAWLED(), (domain, 0, 0, 0, datetime.now(), ))
             if insertTableCrawled:
                 self.log.log(logger.LogLevel.DEBUG, "Inserted %s to 'crawled'" % domain)
             else:

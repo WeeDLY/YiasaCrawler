@@ -52,7 +52,7 @@ def fill_database(log, db):
         'https://www.reddit.com'
     ]
     for url in default_urls:
-        insertedDefault = db.query_commit(query.QUERY_INSERT_TABLE_CRAWL_QUEUE(), (url, 0, 0, datetime.now()))
+        insertedDefault = db.query_execute(query.QUERY_INSERT_TABLE_CRAWL_QUEUE(), (url, 0, 0, datetime.now()))
         if insertedDefault:
             log.log(logger.LogLevel.DEBUG, "Inserted default_url to \'crawl_queue\': %s" % url)
         else:
