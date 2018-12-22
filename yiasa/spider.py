@@ -115,7 +115,6 @@ class Spider:
         
         # Push everything to database
         self.db.commit()
-
     
     def add_to_queue(self, urls):
         """ Adds a list of urls to the queue """

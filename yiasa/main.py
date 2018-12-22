@@ -7,7 +7,7 @@ sys.path.append('..')
 import database.query as query
 import util.logger as logger
 import yiasa.handler as handler
-import server.app as app
+import server.server as server
 
 def start(log, db, args):
     log.log(logger.LogLevel.INFO, 'Starting YiasaBot', forcePrint=True)
@@ -26,7 +26,7 @@ def start(log, db, args):
     handler_thread.daemon = True
     handler_thread.start()
     if args.server:
-        app.start_server()
+        server.start_server()
     while True:
         time.sleep(5*2)
 
@@ -61,4 +61,5 @@ def fill_database(log, db):
         else:
             log.log(logger.LogLevel.ERROR, "Failed to insert default_url to \'crawl_queue\': %s" % url)
             return False
+    db.commit
     return True

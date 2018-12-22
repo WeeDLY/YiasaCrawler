@@ -115,6 +115,7 @@ class Database():
             return False
     
     def commit(self):
+        """ Commit changes to db """
         try:
             with self.lock:
                 self.connection.commit()
