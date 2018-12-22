@@ -7,6 +7,7 @@ sys.path.append('..')
 import database.query as query
 import util.logger as logger
 import yiasa.handler as handler
+import server.app as app
 
 def start(log, db, args):
     log.log(logger.LogLevel.INFO, 'Starting YiasaBot', forcePrint=True)
@@ -24,6 +25,7 @@ def start(log, db, args):
     handler_thread = threading.Thread(target=spider_handler.run)
     handler_thread.daemon = True
     handler_thread.start()
+    app.start_server()
     while True:
         time.sleep(5*2)
 
