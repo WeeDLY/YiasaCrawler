@@ -28,8 +28,9 @@ def start(log, db, args):
             log.log(logger.LogLevel.ERROR, 'Unable to mark url: %s as started in DB - crawl_queue' % url[0])
     queue.reverse()
     settings.queue += queue
+    
     spider_handler = handler.Handler(log, db, settings)
-    spider_handler.start_threads()
+    #spider_handler.start_threads()
 
     
     handler_thread = threading.Thread(target=spider_handler.run)

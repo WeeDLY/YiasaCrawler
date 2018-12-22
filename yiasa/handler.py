@@ -46,8 +46,10 @@ class Handler:
         self.db = db
         self.settings = settings
         self.threadId = 0
+        self.lock = threading.Lock()
 
     def run(self):
+        self.start_threads()
         while True:
             time.sleep(5)
             print('handler_thread')
@@ -63,7 +65,8 @@ class Handler:
         started = 0
         while len(self.settings.spiderThreadList) < self.settings.get_threads() and len(self.settings.queue) > 0:
             domain = self.settings.queue.pop()
-            self.setup_row_crawled(domain)
+            with self.lock:
+                self.setup_row_crawled(domain)
 
             # Create spider object
             s = Spider(self.log, self.db, self.threadId, domain)
