@@ -37,6 +37,7 @@ class Handler:
         self.lock = threading.Lock()
 
     def run(self):
+        self.fill_queue()
         self.start_threads()
         while self.run:
             time.sleep(5)
@@ -50,6 +51,8 @@ class Handler:
             # Restart dead threads with new assignment
             for index in threadStatus["dead"]:
                 self.restart_spider(index)
+            
+            self.fill_queue()
 
     def get_thread_status(self):
         """ returns associate list with dead/alive threads, based on index """
@@ -101,7 +104,6 @@ class Handler:
         self.threadId += 1
         self.log.log(logger.LogLevel.INFO, 'Started new spider: %s' % s.to_string())
 
-
     def get_spider_thread_status(self, threadId):
         """ Gets information about a spider thread, based on threadId """
         name = self.settings.spiderList[threadId].name
@@ -117,6 +119,23 @@ class Handler:
         print(new_domains)
         print(crawl_delay)
     
+    def fill_queue(self):
+        """ Fills queue with needed urls """
+        amount = (self.settings.threads * 2) - len(self.settings.spiderList)
+
+        urls = self.db.query_get(query.QUERY_GET_CRAWL_QUEUE(), (amount, ))
+        tempQueue = list()
+        for url in urls:
+            tempQueue.append(url[0])
+            # Marks url taken in DB. TODO: improve on this, by marking them all at the same time afterwards.
+            with self.lock:
+                urlStarted = self.db.query_commit(query.QUERY_INSERT_CRAWL_QUEUE_STARTED(), (url[0], ))
+                if urlStarted is False:
+                    self.log.log(logger.LogLevel.ERROR, 'Unable to mark url: %s as started in DB - crawl_queue' % url[0])
+        tempQueue.reverse()
+        self.settings.queue += tempQueue
+        self.log.log(logger.LogLevel.DEBUG, 'Added %d urls to queue' % amount)
+
     def setup_row_crawled(self, domain):
         """ This should make sure that the domain in question already exists in table 'crawled' """
         domainExists = self.db.query_exists(query.QUERY_GET_DOMAIN_IN_CRAWLED(), (domain, ))

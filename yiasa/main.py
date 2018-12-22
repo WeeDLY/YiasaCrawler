@@ -18,20 +18,8 @@ def start(log, db, args):
         log.log(logger.LogLevel.ERROR, 'Was unable to fill database with default urls. Exiting..')
         sys.exit()
 
-    queue_urls = db.query_get(query.QUERY_GET_CRAWL_QUEUE(), (args.threads * 2, ))
-    queue = list()
-    for url in queue_urls:
-        queue.append(url[0])
-        # Mark url as taken in DB
-        urlStarted = db.query_commit(query.QUERY_INSERT_CRAWL_QUEUE_STARTED(), (url[0], ))
-        if urlStarted is False:
-            log.log(logger.LogLevel.ERROR, 'Unable to mark url: %s as started in DB - crawl_queue' % url[0])
-    queue.reverse()
-    settings.queue += queue
-    
     spider_handler = handler.Handler(log, db, settings)
     #spider_handler.start_threads()
-
     
     handler_thread = threading.Thread(target=spider_handler.run)
     handler_thread.daemon = True
