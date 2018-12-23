@@ -10,6 +10,7 @@ import yiasa.spider as spider
 from yiasa.spider import Spider
 
 class HandlerSettings():
+    startTime = datetime.now()
     queue = list()
     spiderThreadList = list()
     spiderList = list()

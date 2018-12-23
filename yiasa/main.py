@@ -24,7 +24,9 @@ def start(log, db, args):
     
     handler_thread = threading.Thread(target=spider_handler.run)
     handler_thread.daemon = True
-    handler_thread.start()
+    if args.bot:
+        handler_thread.start()
+
     if args.server:
         server.start_server()
     while True:

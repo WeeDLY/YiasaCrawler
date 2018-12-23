@@ -7,6 +7,7 @@
                 color:#f7882f;
             }
             h1{
+                height: 5%;
                 text-align: center;
             }
             div{
@@ -24,6 +25,22 @@
             #content{
                 margin: 8px;
                 height: 85%;
+
+                display: flex;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: space-around;
+            }
+            #content div{
+                width: 49%;
+                height: 100%;
+            }
+            #content div h2{
+                text-align: center;
+            }
+            #content div p{
+                position:relative;
+                left: 2%;
             }
 
             a{
@@ -44,7 +61,35 @@
             <a href="#">home</a>
         </div>
         <div id="content">
-
+            <div id="general">
+                <h2>General</h2>
+                <p>Runtime: {{runtime}}</p>
+                <p>Threads: {{threads}}</p>
+            </div>
+            <div id="threads">
+                <h2>Threads</h2>
+                <table border="1" cellpadding="2" cellspacing="2">
+                    <thead>
+                        <tr>
+                            <th>Index</th>
+                            <th>Name</th>
+                            <th>Domain</th>
+                            <th>New domains</th>
+                            <th>Completed</th>
+                            <th>Queue</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in result %}
+                        <tr>
+                            {% for data in row %}
+                            <td>{{ data }}</td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </body>
 </html>
