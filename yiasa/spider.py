@@ -59,7 +59,11 @@ class Spider:
         """ sends a http request to url.
             Also adds to table 'crawl_history' """
         self.crawled_urls += 1
-        req = requests.get(url)
+        
+        try:
+            req = requests.get(url)
+        except Exception as e:
+            self.log.log(logger.LogLevel.WARNING, 'Request exception: (%s) %s' % (url, e))
 
         crawlHistory = self.db.query_execute(query.QUERY_INSERT_TABLE_CRAWL_HISTORY(), (self.domain, url, req.status_code, url, datetime.now(), ))
         if crawlHistory:
@@ -71,6 +75,10 @@ class Spider:
     def crawl(self):
         """ Iterate through the entire queue stack """
         last_time = self.start_time
+        if self.queue == None:
+            self.finish_crawl()
+            return
+
         while self.queue and self.crawled_urls < self.max_urls:
             if(last_time + timedelta(minutes=1) < datetime.now()):
                 self.log.log(logger.LogLevel.INFO, 'Thread:%s | New: %d | %d/%d' % (self.name, len(self.new_domains), self.crawled_urls, self.max_urls))
@@ -156,11 +164,12 @@ class Spider:
 
     def parse_robots(self):
         """ Parses robots.txt. disallow/allow is placed in self.robots """
-        r = requests.get('%s/robots.txt' % self.domain)
-        if r.status_code == 404:
-            print('No robots.txt')
+        try:
+            r = request.get('%s/robots.txt' % self.domain)
+        except Exception as e:
+            self.log.log(logger.LogLevel.WARNING, 'Error while parsing robots.txt: %s' % e)
             return
-            
+
         user_agent = True
         for line in r.text.lower().split('\n'):
             if line.startswith('user-agent'):
