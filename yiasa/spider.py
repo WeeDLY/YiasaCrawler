@@ -165,7 +165,7 @@ class Spider:
     def parse_robots(self):
         """ Parses robots.txt. disallow/allow is placed in self.robots """
         try:
-            r = request.get('%s/robots.txt' % self.domain)
+            r = requests.get('%s/robots.txt' % self.domain)
         except Exception as e:
             self.log.log(logger.LogLevel.WARNING, 'Error while parsing robots.txt: %s' % e)
             return
