@@ -13,11 +13,6 @@ settings = None
 
 @app.route('/')
 def root():
-    return str(handler_settings.queue)
-    return "<title>Yiasa Crawler</title>Yiasa Crawler"
-
-@app.route('/test')
-def test():
     runtime = datetime.now() - handler.HandlerSettings.startTime
     threads = len(handler.HandlerSettings.spiderList)
     
