@@ -6,7 +6,7 @@ h1{
     height: 5%;
     text-align: center;
 }
-div{
+div, form{
     border: solid 1px red;
     height: 90%;
 }

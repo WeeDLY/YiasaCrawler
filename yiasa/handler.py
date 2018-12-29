@@ -16,6 +16,7 @@ class HandlerSettings():
     spiderList = list()
     robots = True
     run = True
+
     def __init__(self):
         self._threads = 3
 
@@ -23,6 +24,7 @@ class HandlerSettings():
         return self._threads
         
     def set_threads(self, value):
+        Handler.new_thread_amount = None
         self._threads = value
     
     def del_threads(self):
@@ -30,6 +32,7 @@ class HandlerSettings():
     threads = property(get_threads, set_threads, del_threads, 3)
 
 class Handler:
+    new_thread_amount = None
     def __init__(self, log, db, settings):
         self.log = log
         self.db = db
@@ -40,19 +43,31 @@ class Handler:
         self.fill_queue()
         self.start_threads()
         while self.run:
-            time.sleep(5)
             print('handler_thread')
+            if Handler.new_thread_amount is not None:
+                self.settings.set_threads(Handler.new_thread_amount)
             
+            print('Threads: %d' % self.settings.get_threads())
+
             # Gets status of all active threads
             threadStatus = self.get_thread_status()
+            aliveThreads = len(threadStatus["alive"])
+            deadThreads = len(threadStatus["dead"])
+            totalThreads = aliveThreads + deadThreads
+            print('Threads running: %d' % totalThreads)
             print('Alive: %s' % threadStatus["alive"])
             print('Dead: %s' % threadStatus["dead"])
             
+            if totalThreads < self.settings.get_threads():
+                self.start_threads()
+
             # Restart dead threads with new assignment
             for index in threadStatus["dead"]:
-                self.restart_spider(index)
+                pass#self.restart_spider(index)
             
             self.fill_queue()
+
+            time.sleep(5)
 
     def get_thread_status(self):
         """ returns associate list with dead/alive threads, based on index """

@@ -49,6 +49,9 @@ class Spider:
         self.parse_robots()
 
         req = self.request(self.domain)
+        if req is None:
+            self.log.log(logger.LogLevel.CRITICAL, 'Request failed')
+            return
         soup = BeautifulSoup(req.text, 'html.parser')
         valid_urls = self.extract_url(soup)
         self.add_to_queue(valid_urls)
@@ -64,7 +67,8 @@ class Spider:
             req = requests.get(url)
         except Exception as e:
             self.log.log(logger.LogLevel.WARNING, 'Request exception: (%s) %s' % (url, e))
-
+            return None
+        
         crawlHistory = self.db.query_execute(query.QUERY_INSERT_TABLE_CRAWL_HISTORY(), (self.domain, url, req.status_code, url, datetime.now(), ))
         if crawlHistory:
             self.log.log(logger.LogLevel.DEBUG, 'Inserted to crawl_history: %s' % url)
@@ -86,6 +90,9 @@ class Spider:
             url = self.queue.pop()
             self.completed_queue.add(url)
             req = self.request(url)
+            if req is None:
+                self.log.log(logger.LogLevel.ERROR, 'Request is None, skipping')
+                continue
 
             soup = BeautifulSoup(req.text, 'html.parser')
             valid_urls = self.extract_url(soup)
