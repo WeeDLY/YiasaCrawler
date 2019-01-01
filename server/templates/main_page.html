@@ -1,6 +1,5 @@
 <html lang="en">
     <head>
-        <meta http-equiv="refresh" content="0.4" />
         <meta charset="utf-8" />
         <link rel="stylesheet" type="text/css" href="static/main_css.css">
     </head>
@@ -8,9 +7,9 @@
         <h1>Yiasa Crawler</h1>
         <div id="menu-container">
             <a href="/">Home</a>
+            <a href="/threads">threads</a>
             <a href="/settings">Settings</a>
             <a href="/database">Database</a>
-            <a href="#">home</a>
         </div>
         <div id="content">
             <div id="general">
@@ -18,31 +17,10 @@
                 <p>Runtime: {{runtime}}</p>
                 <p>Threads: {{threads}}</p>
                 <p>Max urls: {{max_urls}}</p>
+                <p>Refresh rate: {{refresh}}</p>
             </div>
-            <div id="threads">
-                <h2>Threads</h2>
-                <table border="1" cellpadding="2" cellspacing="2">
-                    <thead>
-                        <tr>
-                            <th>Index</th>
-                            <th>Name</th>
-                            <th>Runtime</th>
-                            <th>Domain</th>
-                            <th>Crawled/Max</th>
-                            <th>New domains</th>
-                            <th>Queue</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for row in result %}
-                        <tr>
-                            {% for data in row %}
-                            <td>{{ data }}</td>
-                            {% endfor %}
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+            <div id="filler">
+                <h2>Filler</h2>
             </div>
         </div>
     </body>

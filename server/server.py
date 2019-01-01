@@ -14,8 +14,18 @@ settings = None
 @app.route('/')
 def root():
     runtime = datetime.now() - handler.HandlerSettings.startTime
+    threads = len(handler.HandlerSettings.spiderList)
+    max_urls = handler.HandlerSettings.max_urls
+    refresh = handler.HandlerSettings.refresh_rate
+
+    return render_template('main_page.html', runtime=runtime, threads=threads, max_urls=max_urls, refresh=refresh)
+
+@app.route('/threads')
+def threads():
+    runtime = datetime.now() - handler.HandlerSettings.startTime
     spiders = len(handler.HandlerSettings.spiderList)
     max_urls = handler.HandlerSettings.max_urls
+    refresh = handler.HandlerSettings.refresh_rate
 
     new_threads = handler.Handler.new_thread_amount
     threads = ""
@@ -32,7 +42,7 @@ def root():
         values = (index, spider.name, runtime, spider.domain, completedMax,
         len(spider.new_domains), len(spider.queue))
         threadStats.append(values)
-    return render_template('main_page.html', runtime=runtime, threads=threads, max_urls=max_urls, result=threadStats)
+    return render_template('threads.html', runtime=runtime, threads=threads, max_urls=max_urls, refresh=refresh, result=threadStats)
 
 @app.route('/settings', methods=["GET", "POST"])
 def settings():

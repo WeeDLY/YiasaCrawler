@@ -14,6 +14,7 @@ def start(log, db, args):
     settings = handler.HandlerSettings()
     settings.set_threads(args.threads)
     handler.HandlerSettings.max_urls = args.urls
+    handler.HandlerSettings.refresh_rate = args.refresh
 
     defaultFill = fill_database(log, db)
     if defaultFill is False:
