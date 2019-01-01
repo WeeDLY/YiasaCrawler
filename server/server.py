@@ -16,16 +16,16 @@ def root():
     runtime = datetime.now() - handler.HandlerSettings.startTime
     threads = len(handler.HandlerSettings.spiderList)
     max_urls = handler.HandlerSettings.max_urls
-    refresh = handler.HandlerSettings.refresh_rate
+    refresh_rate = handler.HandlerSettings.refresh_rate
 
-    return render_template('main_page.html', runtime=runtime, threads=threads, max_urls=max_urls, refresh=refresh)
+    return render_template('main_page.html', runtime=runtime, threads=threads, max_urls=max_urls, refresh=refresh_rate)
 
 @app.route('/threads')
 def threads():
     runtime = datetime.now() - handler.HandlerSettings.startTime
     spiders = len(handler.HandlerSettings.spiderList)
     max_urls = handler.HandlerSettings.max_urls
-    refresh = handler.HandlerSettings.refresh_rate
+    refresh_rate = handler.HandlerSettings.refresh_rate
 
     new_threads = handler.Handler.new_thread_amount
     threads = ""
@@ -42,30 +42,45 @@ def threads():
         values = (index, spider.name, runtime, spider.domain, completedMax,
         len(spider.new_domains), len(spider.queue))
         threadStats.append(values)
-    return render_template('threads.html', runtime=runtime, threads=threads, max_urls=max_urls, refresh=refresh, result=threadStats)
+    return render_template('threads.html', runtime=runtime, threads=threads, max_urls=max_urls, refresh=refresh_rate, result=threadStats)
 
 @app.route('/settings', methods=["GET", "POST"])
 def settings():
     runtime = datetime.now() - handler.HandlerSettings.startTime
     threads = len(handler.HandlerSettings.spiderList)
     max_urls = handler.HandlerSettings.max_urls
+    refresh_rate = handler.HandlerSettings.refresh_rate
+
     # TODO: Check for wrong input
     if request.method == "POST":
-        threadRequest = get_number(request.form["threads"])
+        threadRequest = get_integer(request.form["threads"])
         handler.Handler.new_thread_amount = threadRequest
 
-        maxUrlRequest = get_number(request.form["max_urls"])
+        maxUrlRequest = get_integer(request.form["max_urls"])
         handler.HandlerSettings.max_urls = maxUrlRequest
-        message = "Changed: threads: %d -> %d\nmax_urls: %d -> %d" % (threads, threadRequest, max_urls, maxUrlRequest)
-        return render_template('settings.html', runtime=runtime, threads=threads, max_urls=max_urls, message=message)
+
+        refreshRateRequest = get_float(request.form["refresh"])
+        handler.HandlerSettings.refresh_rate = refreshRateRequest
+
+        message = "Changed: threads: %d -> %d\n" % (threads, threadRequest)
+        message += "Max urls: %d -> %d\n" % (max_urls, maxUrlRequest)
+        message += "Refresh rate: %f -> %f\n" % (refresh_rate, refreshRateRequest)
+        
+        return render_template('settings.html', runtime=runtime, threads=threads, max_urls=max_urls, refresh=refresh_rate, message=message)
     else:
-        return render_template('settings.html', runtime=runtime, threads=threads, max_urls=max_urls)
+        return render_template('settings.html', runtime=runtime, threads=threads, max_urls=max_urls, refresh=refresh_rate)
 
 @app.route('/database')
 def database():
     return render_template('database.html')
 
-def get_number(value):
+def get_float(value):
+    try:
+        return float(value)
+    except:
+        return 0.0
+
+def get_integer(value):
     try:
         return int(value)
     except:
