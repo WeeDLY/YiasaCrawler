@@ -1,0 +1,51 @@
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <link rel="stylesheet" type="text/css" href="static/main_css.css">
+        <style>
+            div form{
+                display: flex;
+                align-items: center;
+                flex-direction: column;
+                justify-content: baseline;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Yiasa Crawler</h1>
+        <div id="menu-container">
+            <a href="/">Home</a>
+            <a href="/settings">Settings</a>
+            <a href="/database">Database</a>
+            <a href="#">home</a>
+        </div>
+
+        <div id="container">
+            <form action="/query", method="post">
+                <input placeholder="query" type="text" name="query" id="query" />
+                <button type="submit" id="btnSubmit">Go!</button>
+            </form>
+        </div>
+
+        <div id="query-container">
+            <table border="1" cellpadding="5" cellspacing="5">
+                <thead>
+                    <tr>
+                        {% for header in tableHeader %}
+                        <th>{{ header }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in result %}
+                    <tr>
+                        {% for d in row %}
+                        <td>{{ d }}</td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </body>
+</html>

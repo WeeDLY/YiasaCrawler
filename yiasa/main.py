@@ -13,6 +13,7 @@ def start(log, db, args):
     log.log(logger.LogLevel.INFO, 'Starting YiasaBot', forcePrint=True)
     settings = handler.HandlerSettings()
     settings.set_threads(args.threads)
+    handler.HandlerSettings.max_urls = args.urls
 
     defaultFill = fill_database(log, db)
     if defaultFill is False:

@@ -16,7 +16,7 @@
         <div id="menu-container">
             <a href="/">Home</a>
             <a href="/settings">Settings</a>
-            <a href="#">home</a>
+            <a href="/database">Database</a>
             <a href="#">home</a>
         </div>
         <div id="content">
@@ -27,8 +27,10 @@
             </div>
             <div id="threads">
                 <h2>Settings</h2>
-                <form action="changes" method="post">
-                    Threads:<input type="number" name="threads" value="{{threads}}"/>
+                <p>{{message}}</p>
+                <form action="/settings" method="post">
+                    Threads:<input type="number" name="threads" value={{threads}} />
+                    Max Urls:<input type="number" name="max_urls" value={{max_urls}} />
                     <button>Save</button>
                 </form>
             </div>

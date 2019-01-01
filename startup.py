@@ -40,6 +40,7 @@ def parse_arguments():
     parser.add_argument('-s', '--server', action='store_true', default=False)
     parser.add_argument('-d', '--debug', action='store_true', default=False)
     parser.add_argument('-t', '--threads', type=int, default=3)
+    parser.add_argument('-u', '--urls', type=int, default=500)
     args = parser.parse_args()
     startup(args)
 

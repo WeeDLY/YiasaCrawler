@@ -14,29 +14,46 @@ settings = None
 @app.route('/')
 def root():
     runtime = datetime.now() - handler.HandlerSettings.startTime
-    threads = len(handler.HandlerSettings.spiderList)
+    spiders = len(handler.HandlerSettings.spiderList)
+    max_urls = handler.HandlerSettings.max_urls
+
+    new_threads = handler.Handler.new_thread_amount
+    threads = ""
+    if new_threads is None or new_threads == spiders:
+        threads = str(spiders)
+    else:
+        threads = "%d (%d)" % (spiders, new_threads - spiders)
     
     threadStats = []
     for index in range(len(handler.HandlerSettings.spiderList)):
         spider = handler.HandlerSettings.spiderList[index]
-        values = (index, spider.name, spider.domain, len(spider.new_domains), 
-        spider.crawled_urls, len(spider.queue))
+        runtime = datetime.now() - spider.start_time
+        completedMax = '%d/%d' % (spider.crawled_urls, spider.max_urls)
+        values = (index, spider.name, runtime, spider.domain, completedMax,
+        len(spider.new_domains), len(spider.queue))
         threadStats.append(values)
-    return render_template('main_page.html', runtime=runtime, threads=threads, result=threadStats)
+    return render_template('main_page.html', runtime=runtime, threads=threads, max_urls=max_urls, result=threadStats)
 
-@app.route('/settings')
+@app.route('/settings', methods=["GET", "POST"])
 def settings():
     runtime = datetime.now() - handler.HandlerSettings.startTime
     threads = len(handler.HandlerSettings.spiderList)
-    return render_template('settings.html', runtime=runtime, threads=threads)
-
-@app.route('/changes', methods=["POST"])
-def threads():
+    max_urls = handler.HandlerSettings.max_urls
+    # TODO: Check for wrong input
     if request.method == "POST":
-        threads = get_number(request.form["threads"])
-        handler.Handler.new_thread_amount = threads
-    return 'Threads: %s' % str(threads)
+        threadRequest = get_number(request.form["threads"])
+        handler.Handler.new_thread_amount = threadRequest
 
+        maxUrlRequest = get_number(request.form["max_urls"])
+        handler.HandlerSettings.max_urls = maxUrlRequest
+        message = "Changed: threads: %d -> %d\nmax_urls: %d -> %d" % (threads, threadRequest, max_urls, maxUrlRequest)
+        return render_template('settings.html', runtime=runtime, threads=threads, max_urls=max_urls, message=message)
+    else:
+        return render_template('settings.html', runtime=runtime, threads=threads, max_urls=max_urls)
+
+@app.route('/database')
+def database():
+    return render_template('database.html')
 
 def get_number(value):
     try:

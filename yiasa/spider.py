@@ -25,7 +25,7 @@ class Spider:
         print(len(Spider.queue))
         print(Spider.queue)
 
-    def __init__(self, log, db, name, domain):
+    def __init__(self, log, db, name, domain, max_urls):
         self.log = log
         self.db = db
         self.name = name
@@ -37,8 +37,8 @@ class Spider:
         self.crawled_urls = 0
         self.robots = {"disallow":[], "allow":[]}
         self.crawl_delay = 0
-        self.max_urls = 20 # Max amount of urls to be crawled
-        self.start_time = None
+        self.max_urls = max_urls
+        self.start_time = datetime.now()
 
     def to_string(self):
         return 'Name:%s @domain: %s' % (self.name, self.domain)
@@ -51,11 +51,12 @@ class Spider:
         req = self.request(self.domain)
         if req is None:
             self.log.log(logger.LogLevel.CRITICAL, 'Request failed')
+            #self.finish_crawl()
             return
         soup = BeautifulSoup(req.text, 'html.parser')
         valid_urls = self.extract_url(soup)
         self.add_to_queue(valid_urls)
-        self.start_time = datetime.now()
+        #self.start_time = datetime.now()
         self.crawl()
     
     def request(self, url):
@@ -164,6 +165,7 @@ class Spider:
     def url_follow_robots(self, url):
         """ Checks if a url breaks the robots.txt rules """
         for disallow in self.robots["disallow"]:
+            
             invalid = re.search(disallow, url, re.IGNORECASE)
             if invalid:
                 return False

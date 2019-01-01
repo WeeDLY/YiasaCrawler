@@ -16,6 +16,7 @@ class HandlerSettings():
     spiderList = list()
     robots = True
     run = True
+    max_urls = 500
 
     def __init__(self):
         self._threads = 3
@@ -24,7 +25,8 @@ class HandlerSettings():
         return self._threads
         
     def set_threads(self, value):
-        Handler.new_thread_amount = None
+        if Handler.new_thread_amount == value:
+            Handler.new_thread_amount = None
         self._threads = value
     
     def del_threads(self):
@@ -63,7 +65,7 @@ class Handler:
 
             # Restart dead threads with new assignment
             for index in threadStatus["dead"]:
-                pass#self.restart_spider(index)
+                self.restart_spider(index)
             
             self.fill_queue()
 
@@ -72,8 +74,8 @@ class Handler:
     def get_thread_status(self):
         """ returns associate list with dead/alive threads, based on index """
         threadStatus = {"dead":[], "alive":[]}
-        for index in range(len(self.settings.spiderThreadList)):
-            alive = self.settings.spiderThreadList[index].isAlive()
+        for index in range(len(HandlerSettings.spiderThreadList)):
+            alive = HandlerSettings.spiderThreadList[index].isAlive()
             if alive:
                 threadStatus["alive"].append(index)
             else:
@@ -82,37 +84,43 @@ class Handler:
 
     def start_threads(self):
         """ Start all threads """
-        started = 0
-        while len(self.settings.spiderThreadList) < self.settings.get_threads() and len(self.settings.queue) > 0:
+        while len(HandlerSettings.spiderThreadList) < self.settings.get_threads() and len(HandlerSettings.queue) > 0:
             self.start_spider()
 
     def restart_spider(self, index):
         """ remakes a spider thread """
-        oldSpider = self.settings.spiderList[index]
-        oldThread = self.settings.spiderThreadList[index]
+        if index > len(HandlerSettings.spiderList) - 1:
+            self.log.log(logger.LogLevel.ERROR, "Can't restart spider: index/len(spiderList): %d/%d" % (index, len(HandlerSettings.spiderList)))
+            return
+
+        oldSpider = HandlerSettings.spiderList[index]
+        oldThread = HandlerSettings.spiderThreadList[index]
         oldThread.join()
         self.log.log(logger.LogLevel.INFO, 'Restarting thread: %d -> %d' % (oldSpider.name, self.threadId))
         
         # Remove old spider+thread from list
-        del self.settings.spiderList[index]
-        del self.settings.spiderThreadList[index]
+        del HandlerSettings.spiderList[index]
+        del HandlerSettings.spiderThreadList[index]
 
-        # Start new spider
-        self.start_spider()
+        if len(HandlerSettings.spiderList) < self.settings.get_threads():
+            self.start_spider()
+        else:
+            self.log.log(logger.LogLevel.INFO, 'Not restarting spider, due to thread limit')
 
     def start_spider(self):
         """ Starts a spider thread """
-        domain = self.settings.queue.pop()
+
+        domain = HandlerSettings.queue.pop()
         self.setup_row_crawled(domain)
 
         # Create spider object
-        s = Spider(self.log, self.db, self.threadId, domain)
-        self.settings.spiderList.append(s)
+        s = Spider(self.log, self.db, self.threadId, domain, HandlerSettings.max_urls)
+        HandlerSettings.spiderList.append(s)
 
         # Create thread for spider object
         t = threading.Thread(target=s.start_crawl, name=self.threadId)
         t.daemon = True
-        self.settings.spiderThreadList.append(t)
+        HandlerSettings.spiderThreadList.append(t)
 
         t.start()
         self.threadId += 1
@@ -120,12 +128,12 @@ class Handler:
 
     def get_spider_thread_status(self, threadId):
         """ Gets information about a spider thread, based on threadId """
-        name = self.settings.spiderList[threadId].name
-        start_time = self.settings.spiderList[threadId].start_time
-        crawled_urls = self.settings.spiderList[threadId].crawled_urls
-        queue = self.settings.spiderList[threadId].queue
-        new_domains = self.settings.spiderList[threadId].new_domains
-        crawl_delay = self.settings.spiderList[threadId].crawl_delay
+        name = HandlerSettings.spiderList[threadId].name
+        start_time = HandlerSettings.spiderList[threadId].start_time
+        crawled_urls = HandlerSettings.spiderList[threadId].crawled_urls
+        queue = HandlerSettings.spiderList[threadId].queue
+        new_domains = HandlerSettings.spiderList[threadId].new_domains
+        crawl_delay = HandlerSettings.spiderList[threadId].crawl_delay
         print(name)
         print(start_time)
         print(crawled_urls)
@@ -135,7 +143,7 @@ class Handler:
     
     def fill_queue(self):
         """ Fills queue with needed urls """
-        amount = (self.settings.threads * 2) - len(self.settings.spiderList)
+        amount = (self.settings.get_threads() * 2) - len(HandlerSettings.spiderList)
 
         urls = self.db.query_get(query.QUERY_GET_CRAWL_QUEUE(), (amount, ))
         tempQueue = list()
@@ -147,7 +155,7 @@ class Handler:
             if urlStarted is False:
                 self.log.log(logger.LogLevel.ERROR, 'Unable to mark url: %s as started in DB - crawl_queue' % url[0])
         tempQueue.reverse()
-        self.settings.queue += tempQueue
+        HandlerSettings.queue += tempQueue
         self.log.log(logger.LogLevel.DEBUG, 'Added %d urls to queue' % amount)
 
     def setup_row_crawled(self, domain):

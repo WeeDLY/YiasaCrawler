@@ -9,7 +9,7 @@
         <div id="menu-container">
             <a href="/">Home</a>
             <a href="/settings">Settings</a>
-            <a href="#">home</a>
+            <a href="/database">Database</a>
             <a href="#">home</a>
         </div>
         <div id="content">
@@ -17,6 +17,7 @@
                 <h2>General</h2>
                 <p>Runtime: {{runtime}}</p>
                 <p>Threads: {{threads}}</p>
+                <p>Max urls: {{max_urls}}</p>
             </div>
             <div id="threads">
                 <h2>Threads</h2>
@@ -25,9 +26,10 @@
                         <tr>
                             <th>Index</th>
                             <th>Name</th>
+                            <th>Runtime</th>
                             <th>Domain</th>
+                            <th>Crawled/Max</th>
                             <th>New domains</th>
-                            <th>Completed</th>
                             <th>Queue</th>
                         </tr>
                     </thead>
