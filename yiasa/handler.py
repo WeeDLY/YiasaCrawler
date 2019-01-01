@@ -19,7 +19,7 @@ class HandlerSettings():
     max_urls = 500
 
     def __init__(self):
-        self._threads = 3
+        self._threads = 0
 
     def get_threads(self):
         return self._threads
@@ -31,7 +31,7 @@ class HandlerSettings():
     
     def del_threads(self):
         del self._threads
-    threads = property(get_threads, set_threads, del_threads, 3)
+    threads = property(get_threads, set_threads, del_threads, 0)
 
 class Handler:
     new_thread_amount = None
