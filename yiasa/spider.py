@@ -51,12 +51,11 @@ class Spider:
         req = self.request(self.domain)
         if req is None:
             self.log.log(logger.LogLevel.CRITICAL, 'Request failed')
-            #self.finish_crawl()
+            self.finish_crawl()
             return
         soup = BeautifulSoup(req.text, 'html.parser')
         valid_urls = self.extract_url(soup)
         self.add_to_queue(valid_urls)
-        #self.start_time = datetime.now()
         self.crawl()
     
     def request(self, url):
