@@ -45,6 +45,10 @@ def QUERY_INSERT_CRAWL_QUEUE_STARTED():
                 started = 1
                 WHERE domain = ? """
 
+def QUERY_INSERT_CRAWL_INFORMATION():
+    return """ INSERT or ignore into crawl_information(email, url, extracted_date)
+                VALUES (?, ?, ?)"""
+
 def QUERY_UPDATE_TABLE_CRAWLED():
     """ Updates table 'crawled' based on domain """
     return """ UPDATE crawled SET

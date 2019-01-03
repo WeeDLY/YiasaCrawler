@@ -19,6 +19,10 @@ class Spider:
         r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})' # ...or ip
         r'(?::\d+)?' # optional port
         r'(?:/?|[/?]\S+)$', re.IGNORECASE)
+    
+    re_email = re.compile(
+        """(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|\"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*\")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])"""
+    )
 
     @staticmethod
     def print_queue():
@@ -34,6 +38,7 @@ class Spider:
         self.queue = set()
         self.completed_queue = set()
         self.new_domains = set()
+        self.emails = set()
         self.crawled_urls = 0
         self.robots = {"disallow":[], "allow":[]}
         self.crawl_delay = 0
@@ -93,9 +98,16 @@ class Spider:
             if req is None:
                 self.log.log(logger.LogLevel.ERROR, 'Request is None, skipping')
                 continue
+            
+            if req.text is None:
+                self.log.log(logger.LogLevel.ERROR, 'Request.text is None, skipping')
+                continue
 
             soup = BeautifulSoup(req.text, 'html.parser')
             valid_urls = self.extract_url(soup)
+
+            self.extract_email(req.text)
+
             self.add_to_queue(valid_urls)
             time.sleep(self.crawl_delay)
         
@@ -128,6 +140,16 @@ class Spider:
             else:
                 self.log.log(logger.LogLevel.WARNING, "Failed to add 'crawl_queue': %s" % domain)
         
+        # Add emails to db
+        success = failed = 0
+        for email in self.emails:
+            addedEmail = self.db.query_execute(query.QUERY_INSERT_CRAWL_INFORMATION(), (email, self.domain, datetime.now()))
+            if addedEmail:
+                success += 1
+            else:
+                failed += 1
+        self.log.log(logger.LogLevel.INFO, "Added emails to db. Success: %d, failed: %d" % (success, failed))
+
         # Push everything to database
         self.db.commit()
     
@@ -141,6 +163,11 @@ class Spider:
             elif url not in self.queue and url not in self.completed_queue:
                 if self.url_follow_robots(url):
                     self.queue.add(url)
+
+    def extract_email(self, text):
+        """ Extracts emails from website """
+        emails = set(re.findall(Spider.re_email, text))
+        self.emails = self.emails.union(emails)
 
     def extract_url(self, soup):
         """ Extract all urls from a soup """
@@ -164,7 +191,6 @@ class Spider:
     def url_follow_robots(self, url):
         """ Checks if a url breaks the robots.txt rules """
         for disallow in self.robots["disallow"]:
-            
             invalid = re.search(disallow, url, re.IGNORECASE)
             if invalid:
                 return False

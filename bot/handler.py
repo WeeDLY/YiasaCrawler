@@ -110,7 +110,6 @@ class Handler:
 
     def start_spider(self):
         """ Starts a spider thread """
-
         domain = HandlerSettings.queue.pop()
         self.setup_row_crawled(domain)
 
