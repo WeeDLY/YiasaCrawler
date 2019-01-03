@@ -62,9 +62,13 @@ def settings():
         refreshRateRequest = get_float(request.form["refresh"])
         handler.HandlerSettings.refresh_rate = refreshRateRequest
 
-        message = "Changed: threads: %d -> %d\n" % (threads, threadRequest)
-        message += "Max urls: %d -> %d\n" % (max_urls, maxUrlRequest)
-        message += "Refresh rate: %f -> %f\n" % (refresh_rate, refreshRateRequest)
+        message = []
+        if same_value(threads, threadRequest) is False:
+            message.append("Changed threads: %d -> %d\n" % (threads, threadRequest))
+        if same_value(max_urls, maxUrlRequest) is False:
+            message.append("Changed max urls: %d -> %d\n" % (max_urls, maxUrlRequest))
+        if same_value(refresh_rate, refreshRateRequest) is False:
+            message.append("Changed refresh rate: %f -> %f\n" % (refresh_rate, refreshRateRequest))
         
         return render_template('settings.html', runtime=runtime, threads=threads, max_urls=max_urls, refresh=refresh_rate, message=message)
     else:
@@ -73,6 +77,9 @@ def settings():
 @app.route('/database')
 def database():
     return render_template('database.html')
+
+def same_value(value1, value2):
+    return value1 == value2
 
 def get_float(value):
     try:

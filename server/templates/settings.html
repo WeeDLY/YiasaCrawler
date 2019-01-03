@@ -27,7 +27,11 @@
             </div>
             <div id="threads">
                 <h2>Settings</h2>
-                <p>{{message}}</p>
+                <span id="feedback">
+                    {% for data in message %}
+                    <p>{{ data }}</p>
+                    {% endfor %}
+                </span>
                 <form action="/settings" method="post">
                     Threads:<input type="number" name="threads" value={{threads}} />
                     Max Urls:<input type="number" name="max_urls" value={{max_urls}} />
