@@ -23,7 +23,7 @@ def startup(args):
 
 def check_database(log):
     """ Checks that database is up and running correctly """
-    db = database.Database(log, 'yiasa.db')
+    db = database.Database(log, 'crawl.db')
     status = db.check_database()
     if status is False:
         log.log(logger.LogLevel.CRITICAL, 'Database is not set up correctly')
