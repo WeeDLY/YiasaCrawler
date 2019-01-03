@@ -6,7 +6,7 @@ sys.path.append('..')
 
 import database.query as query
 import util.logger as logger
-import yiasa.handler as handler
+import bot.handler as handler
 import server.server as server
 
 def start(log, db, args):

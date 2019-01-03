@@ -5,8 +5,8 @@ import argparse
 import database.database as database
 import util.logger as logger
 import debug.debug as debug
-import yiasa.main as main
-import yiasa.handler as handler
+import bot.main as main
+import bot.handler as handler
 
 def startup(args):
     log = logger.Logger('yiasa_log', 'logs')

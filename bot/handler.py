@@ -6,8 +6,8 @@ sys.path.append('..')
 
 import database.query as query
 import util.logger as logger
-import yiasa.spider as spider
-from yiasa.spider import Spider
+import bot.spider as spider
+from bot.spider import Spider
 
 class HandlerSettings():
     startTime = datetime.now()

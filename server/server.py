@@ -2,7 +2,7 @@ from flask import Flask, Markup, render_template, request
 from datetime import datetime
 import sys
 sys.path.append('..')
-import yiasa.handler as handler
+import bot.handler as handler
 
 
 def start_server():

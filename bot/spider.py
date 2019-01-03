@@ -8,7 +8,7 @@ sys.path.append('..')
 
 import util.logger as logger
 import database.query as query
-import yiasa.handler
+import bot.handler
 
 class Spider:
     queue = set()
