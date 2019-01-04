@@ -84,7 +84,10 @@ def settings():
             message.append("Changed max urls: %d -> %d\n" % (max_urls, maxUrlRequest))
         if same_value(refresh_rate, refreshRateRequest) is False:
             message.append("Changed refresh rate: %f -> %f\n" % (refresh_rate, refreshRateRequest))
-        
+
+        threads = threadRequest
+        max_urls = maxUrlRequest
+        refresh_rate = refreshRateRequest
         return render_template('settings.html', runtime=runtime, threads=threads, max_urls=max_urls, refresh=refresh_rate, message=message)
     else:
         return render_template('settings.html', runtime=runtime, threads=threads, max_urls=max_urls, refresh=refresh_rate)
