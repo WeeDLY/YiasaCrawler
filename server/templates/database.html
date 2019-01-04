@@ -2,6 +2,35 @@
     <head>
         <meta charset="utf-8" />
         <link rel="stylesheet" type="text/css" href="static/main_css.css">
+        <style>
+            #query-container{
+                align-content: center;
+                align-self: center;
+                padding: 1%;
+                border: solid 1px red;
+                height: 70%;
+                width: 80%;
+                left: 0px;
+                right: 0px;
+                position: absolute;
+                margin: auto;
+                color:#f7ef6a;
+                overflow: auto;
+            }
+
+            #container{
+                height: 5%;
+                width: 20%;
+            }
+
+            .center{
+                top: 0px;
+                left: 0px;
+                bottom: 0px;
+                right: 0px;
+                margin: auto;
+            }
+        </style>
     </head>
     <body>
         <h1>Yiasa Crawler</h1>
@@ -12,15 +41,15 @@
             <a href="/database">Database</a>
         </div>
 
-        <div id="container">
-            <form action="/query", method="post">
+        <div id="container" class="center">
+            <form action="/database", method="post">
                 <input placeholder="query" type="text" name="query" id="query" />
                 <button type="submit" id="btnSubmit">Go!</button>
             </form>
         </div>
 
         <div id="query-container">
-            <table border="1" cellpadding="5" cellspacing="5">
+            <table border="1" cellpadding="5" cellspacing="5" class="center">
                 <thead>
                     <tr>
                         {% for header in tableHeader %}

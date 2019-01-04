@@ -1,6 +1,7 @@
 from flask import Flask, Markup, render_template, request
 from datetime import datetime
 import sys
+import sqlite3
 sys.path.append('..')
 import bot.handler as handler
 
@@ -10,14 +11,20 @@ class SpiderTable():
         self.spider = spider
         self.runtime = runtime
 
-def start_server():
+
+def start_server(db):
+    global database, connection
+    database = db
+    connection = sqlite3.connect(database.database_file, check_same_thread=False)
     app.run(host='0.0.0.0', port=5300)
 
 app = Flask(__name__)
-settings = None
+database = None
+connection = None
 
 @app.route('/')
 def root():
+    print(connection)
     runtime = get_runtime()
     threads = get_threads()
     max_urls = handler.HandlerSettings.max_urls
@@ -43,7 +50,6 @@ def threads():
     for index in range(get_threads()):
         spider = handler.HandlerSettings.spiderList[index]
         runtime = datetime.now() - spider.start_time
-        #crawl_stats = '%d/%d' % (spider.crawled_urls, spider.max_urls)
         sTable = SpiderTable(index, spider, runtime)
         threadStats.append(sTable)
     if request.method == "POST":
@@ -84,9 +90,27 @@ def settings():
     else:
         return render_template('settings.html', runtime=runtime, threads=threads, max_urls=max_urls, refresh=refresh_rate)
 
-@app.route('/database')
+@app.route('/database', methods=["GET", "POST"])
 def database():
-    return render_template('database.html')
+    tableHeader = []
+    result = []
+    if request.method == "POST":
+        query = request.form["query"]
+        print('Query: %s' % query)
+        try:
+            cur = connection.cursor()
+            cur.execute(query)
+            queryResult = cur.fetchall()
+            if queryResult is None:
+                result = "No result matched: %s" % query
+                tableHeader = ""
+            else:
+                for desc in cur.description:
+                    tableHeader.append(desc[0])
+                    result = queryResult
+        except Exception as e:
+            result = "Could not execute query: %s" % query
+    return render_template('database.html', tableHeader=tableHeader, result=result)
 
 def get_runtime():
     """ returns current runtime """
