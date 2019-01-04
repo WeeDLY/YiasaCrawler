@@ -41,12 +41,13 @@ class Handler:
         self.db = db
         self.settings = settings
         self.threadId = 0
+        self.delay = timedelta(seconds=3)
 
     def run(self):
         self.fill_queue()
         self.start_threads()
+        last_loop = datetime.now()
         while self.run:
-            print('handler_thread')
             if Handler.new_thread_amount is not None:
                 self.settings.set_threads(Handler.new_thread_amount)
             
@@ -70,7 +71,10 @@ class Handler:
             
             self.fill_queue()
 
-            time.sleep(5)
+            delay = self.delay - (datetime.now() - last_loop)
+            if delay.total_seconds() > 0:
+                time.sleep(delay.total_seconds())
+            last_loop = datetime.now()
 
     def get_thread_status(self):
         """ returns associate list with dead/alive threads, based on index """
