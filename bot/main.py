@@ -25,8 +25,7 @@ def start(log, db, args):
     
     handler_thread = threading.Thread(target=spider_handler.run)
     handler_thread.daemon = True
-    if args.bot:
-        handler_thread.start()
+    handler_thread.start()
 
     # TODO: Need to start server on it's own thread
     if args.server:

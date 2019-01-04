@@ -24,7 +24,6 @@ connection = None
 
 @app.route('/')
 def root():
-    print(connection)
     runtime = get_runtime()
     threads = get_threads()
     max_urls = handler.HandlerSettings.max_urls
@@ -96,7 +95,6 @@ def database():
     result = []
     if request.method == "POST":
         query = request.form["query"]
-        print('Query: %s' % query)
         try:
             cur = connection.cursor()
             cur.execute(query)
