@@ -3,6 +3,17 @@
         <meta http-equiv="refresh" content="{{refresh}}" />
         <meta charset="utf-8" />
         <link rel="stylesheet" type="text/css" href="static/main_css.css">
+        <script>
+            window.onload = init;
+            function init(){
+                var buttons = document.getElementsByTagName("button");
+                for(var i = 0; i < buttons.length; i++){
+                    if(buttons[i].className === "True"){
+                        buttons[i].style = "display: block;";
+                    }
+                }
+            }
+        </script>
     </head>
     <body>
         <h1>Yiasa Crawler</h1>
@@ -18,27 +29,38 @@
                 <p>Runtime: {{runtime}}</p>
                 <p>Threads: {{threads}}</p>
                 <p>Max urls: {{max_urls}}</p>
+                <p>Refresh rate: {{refresh}}</p>
             </div>
             <div id="threads">
                 <h2>Threads</h2>
                 <table border="1" cellpadding="2" cellspacing="2">
                     <thead>
                         <tr>
-                            <th>Index</th>
                             <th>Name</th>
                             <th>Runtime</th>
+                            <th>Delay</th>
                             <th>Domain</th>
                             <th>Crawled/Max</th>
                             <th>New domains</th>
                             <th>Queue</th>
+                            <th>Stop thread</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for row in result %}
+                        {% for spiderTable in result %}
                         <tr>
-                            {% for data in row %}
-                            <td>{{ data }}</td>
-                            {% endfor %}
+                            <td>{{spiderTable.spider.name}}</td>
+                            <td>{{spiderTable.runtime}}</td>
+                            <td>{{spiderTable.spider.crawl_delay}}</td>
+                            <td>{{spiderTable.spider.domain}}</td>
+                            <td>{{spiderTable.spider.crawled_urls}}/{{spiderTable.spider.max_urls}}</td>
+                            <td>{{spiderTable.spider.new_domains|length}}</td>
+                            <td>{{spiderTable.queue|length}}</td>
+                            <td>
+                                <form action="/threads" method="post">
+                                    <button name="thread" style="display: none;" class="{{spiderTable.spider.run}}" value="{{spiderTable.index}}">Stop {{spiderTable.index}}</button>
+                                </form>
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>

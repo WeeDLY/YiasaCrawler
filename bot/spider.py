@@ -44,6 +44,7 @@ class Spider:
         self.crawl_delay = 0
         self.max_urls = max_urls
         self.start_time = datetime.now()
+        self.run = True
 
     def to_string(self):
         return 'Name:%s @domain: %s' % (self.name, self.domain)
@@ -88,7 +89,7 @@ class Spider:
             self.finish_crawl()
             return
 
-        while self.queue and self.crawled_urls < self.max_urls:
+        while self.queue and self.crawled_urls < self.max_urls and self.run:
             if(last_time + timedelta(minutes=1) < datetime.now()):
                 self.log.log(logger.LogLevel.INFO, 'Thread:%s | New: %d | %d/%d' % (self.name, len(self.new_domains), self.crawled_urls, self.max_urls))
                 last_time = datetime.now()
@@ -111,6 +112,9 @@ class Spider:
             self.add_to_queue(valid_urls)
             time.sleep(self.crawl_delay)
         
+        if self.run:
+            self.log.log(logger.LogLevel.DEBUG, 'Spiderthread: %s(%s) was stopped' % (self.name, self.domain))
+
         # Finished crawling, insert stats to DB
         self.finish_crawl()
     

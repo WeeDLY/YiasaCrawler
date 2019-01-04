@@ -4,6 +4,11 @@ import sys
 sys.path.append('..')
 import bot.handler as handler
 
+class SpiderTable():
+    def __init__(self, index, spider, runtime):
+        self.index = index
+        self.spider = spider
+        self.runtime = runtime
 
 def start_server():
     app.run(host='0.0.0.0', port=5300)
@@ -13,17 +18,17 @@ settings = None
 
 @app.route('/')
 def root():
-    runtime = datetime.now() - handler.HandlerSettings.startTime
-    threads = len(handler.HandlerSettings.spiderList)
+    runtime = get_runtime()
+    threads = get_threads()
     max_urls = handler.HandlerSettings.max_urls
     refresh_rate = handler.HandlerSettings.refresh_rate
 
     return render_template('main_page.html', runtime=runtime, threads=threads, max_urls=max_urls, refresh=refresh_rate)
 
-@app.route('/threads')
+@app.route('/threads', methods=["GET", "POST"])
 def threads():
-    runtime = datetime.now() - handler.HandlerSettings.startTime
-    spiders = len(handler.HandlerSettings.spiderList)
+    runtime = get_runtime()
+    spiders = get_threads()
     max_urls = handler.HandlerSettings.max_urls
     refresh_rate = handler.HandlerSettings.refresh_rate
 
@@ -35,23 +40,28 @@ def threads():
         threads = "%d (%d)" % (spiders, new_threads - spiders)
     
     threadStats = []
-    for index in range(len(handler.HandlerSettings.spiderList)):
+    for index in range(get_threads()):
         spider = handler.HandlerSettings.spiderList[index]
         runtime = datetime.now() - spider.start_time
-        completedMax = '%d/%d' % (spider.crawled_urls, spider.max_urls)
-        values = (index, spider.name, runtime, spider.domain, completedMax,
-        len(spider.new_domains), len(spider.queue))
-        threadStats.append(values)
+        #crawl_stats = '%d/%d' % (spider.crawled_urls, spider.max_urls)
+        sTable = SpiderTable(index, spider, runtime)
+        threadStats.append(sTable)
+    if request.method == "POST":
+        threadIndex = get_integer(request.form["thread"])
+        spider =  handler.HandlerSettings.spiderList[threadIndex]
+        print('Stopping thread: %s' % spider.domain)
+        spider.run = False
+
     return render_template('threads.html', runtime=runtime, threads=threads, max_urls=max_urls, refresh=refresh_rate, result=threadStats)
 
 @app.route('/settings', methods=["GET", "POST"])
 def settings():
-    runtime = datetime.now() - handler.HandlerSettings.startTime
-    threads = len(handler.HandlerSettings.spiderList)
+    runtime = get_runtime()
+    threads = get_threads()
     max_urls = handler.HandlerSettings.max_urls
     refresh_rate = handler.HandlerSettings.refresh_rate
 
-    # TODO: Check for wrong input
+    # TODO: Check for invalid input
     if request.method == "POST":
         threadRequest = get_integer(request.form["threads"])
         handler.Handler.new_thread_amount = threadRequest
@@ -78,16 +88,27 @@ def settings():
 def database():
     return render_template('database.html')
 
+def get_runtime():
+    """ returns current runtime """
+    return datetime.now() - handler.HandlerSettings.startTime
+
+def get_threads():
+    """ returns amount of threads """
+    return len(handler.HandlerSettings.spiderList)
+
 def same_value(value1, value2):
+    """ Checks if values are the same """
     return value1 == value2
 
 def get_float(value):
+    """ Converts a variable to float """
     try:
         return float(value)
     except:
         return 0.0
 
 def get_integer(value):
+    """ Converts a variable to int """
     try:
         return int(value)
     except:
