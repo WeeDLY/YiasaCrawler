@@ -16,7 +16,7 @@ class HandlerSettings():
     spiderList = list()
     robots = True
     run = True
-    max_urls = 500
+    max_urls = 100
     refresh = 0.4
 
     def __init__(self):
