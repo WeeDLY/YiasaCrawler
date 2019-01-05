@@ -18,7 +18,7 @@ def start_server(db):
     connection = sqlite3.connect(database.database_file, check_same_thread=False)
     log = logging.getLogger('werkzeug')
     log.setLevel(logging.ERROR)
-    app.run(host='0.0.0.0', port=5300)
+    app.run(host='0.0.0.0', port=4000)
 
 app = Flask(__name__)
 database = None

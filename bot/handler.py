@@ -150,6 +150,8 @@ class Handler:
         """ Fills queue with needed urls """
         amount = (self.settings.get_threads() * 2) - len(HandlerSettings.queue)
         print('Queue length: %d/%d. Getting: %d' % (len(HandlerSettings.queue), self.settings.get_threads() * 2, amount))
+        if amount < 0:
+            return
 
         urls = self.db.query_get(query.QUERY_GET_CRAWL_QUEUE(), (amount, ))
         tempQueue = list()
