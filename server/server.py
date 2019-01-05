@@ -1,6 +1,7 @@
 from flask import Flask, Markup, render_template, request
 from datetime import datetime
 import sys
+import logging
 import sqlite3
 sys.path.append('..')
 import bot.handler as handler
@@ -11,11 +12,12 @@ class SpiderTable():
         self.spider = spider
         self.runtime = runtime
 
-
 def start_server(db):
     global database, connection
     database = db
     connection = sqlite3.connect(database.database_file, check_same_thread=False)
+    log = logging.getLogger('werkzeug')
+    log.setLevel(logging.ERROR)
     app.run(host='0.0.0.0', port=5300)
 
 app = Flask(__name__)
