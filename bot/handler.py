@@ -52,6 +52,7 @@ class Handler:
                 self.settings.set_threads(Handler.new_thread_amount)
             
             print('Threads: %d' % self.settings.get_threads())
+            print('Queue: %s' % HandlerSettings.queue)
 
             # Gets status of all active threads
             threadStatus = self.get_thread_status()
@@ -114,7 +115,7 @@ class Handler:
 
     def start_spider(self):
         """ Starts a spider thread """
-        domain = HandlerSettings.queue.pop()
+        domain = HandlerSettings.queue.pop(0)
         self.setup_row_crawled(domain)
 
         # Create spider object
@@ -147,7 +148,8 @@ class Handler:
     
     def fill_queue(self):
         """ Fills queue with needed urls """
-        amount = (self.settings.get_threads() * 2) - len(HandlerSettings.spiderList)
+        amount = (self.settings.get_threads() * 2) - len(HandlerSettings.queue)
+        print('Queue length: %d/%d. Getting: %d' % (len(HandlerSettings.queue), self.settings.get_threads() * 2, amount))
 
         urls = self.db.query_get(query.QUERY_GET_CRAWL_QUEUE(), (amount, ))
         tempQueue = list()
@@ -158,7 +160,6 @@ class Handler:
             urlStarted = self.db.query_execute(query.QUERY_INSERT_CRAWL_QUEUE_STARTED(), (url[0], ))
             if urlStarted is False:
                 self.log.log(logger.LogLevel.ERROR, 'Unable to mark url: %s as started in DB - crawl_queue' % url[0])
-        tempQueue.reverse()
         HandlerSettings.queue += tempQueue
         self.log.log(logger.LogLevel.DEBUG, 'Added %d urls to queue' % amount)
 

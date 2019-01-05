@@ -65,5 +65,5 @@ def fill_database(log, db):
         else:
             log.log(logger.LogLevel.ERROR, "Failed to insert default_url to \'crawl_queue\': %s" % url)
             return False
-    db.commit
+    db.commit()
     return True
