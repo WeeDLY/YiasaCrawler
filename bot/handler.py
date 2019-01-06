@@ -115,7 +115,13 @@ class Handler:
 
     def start_spider(self):
         """ Starts a spider thread """
-        domain = HandlerSettings.queue.pop(0)
+        if len(HandlerSettings.queue) > 0:
+            domain = HandlerSettings.queue.pop(0)
+        else:
+            self.log.log(logger.LogLevel.WARNING, 'queue is empty. Have to refill')
+            self.fill_queue()
+            domain = HandlerSettings.queue.pop(0)
+
         self.setup_row_crawled(domain)
 
         # Create spider object

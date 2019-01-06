@@ -29,7 +29,7 @@ def start(log, db, args):
 
     # TODO: Need to start server on it's own thread
     if args.server:
-        server.start_server(db)
+        server.start_server(db, log)
     
     while True:
         time.sleep(5*2)

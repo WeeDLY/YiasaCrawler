@@ -14,10 +14,13 @@
         <div id="content">
             <div id="general">
                 <h2>General</h2>
-                <p>Runtime: {{runtime}}</p>
-                <p>Threads: {{threads}}</p>
-                <p>Max urls: {{max_urls}}</p>
-                <p>Refresh rate: {{refresh}}</p>
+                <p><b>Runtime:</b> {{runtime}}</p>
+                <p><b>Threads/Spiders:</b> {{threads}}/{{spiders}}</p>
+                <p><b>Max urls:</b> {{max_urls}}</p>
+                <p><b>Refresh rate:</b> {{refresh}}</p>
+                <p><b>Database:</b> {{database}}</p>
+                <p><b>Log settings</b></p>
+                <p style="text-indent: 2em;" class="small-text"><b>Folder:</b> {{logger.folder}}&emsp;<b>max_size:</b> {{logger.max_size}}&emsp;<b>print_level:</b> {{logger.print_level}}</p>
             </div>
             <div id="filler">
                 <h2>Filler</h2>

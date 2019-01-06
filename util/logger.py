@@ -12,11 +12,11 @@ class LogLevel(Enum):
 
 class Logger():
     """ Logger class """
-    def __init__(self, filename, folder, maxSize=3000, printLevel=LogLevel.INFO):
+    def __init__(self, filename, folder, max_size=3000, print_level=LogLevel.INFO):
         self.filename = filename
         self.folder = folder
-        self.maxSize = maxSize
-        self.printLevel = printLevel
+        self.max_size = max_size
+        self.print_level = print_level
 
         folder = self.check_folder()
         if folder is False:
@@ -29,7 +29,7 @@ class Logger():
         """ returns the new logfile """
         tempfile = '%s/%s.log' % (self.folder, self.filename)
         num = 1
-        while self.get_file_length(tempfile) >= self.maxSize:
+        while self.get_file_length(tempfile) >= self.max_size:
             tempfile = '%s/%s%d.log' % (self.folder, self.filename, num)
             num += 1
         return tempfile
@@ -53,7 +53,7 @@ class Logger():
         """ Logs messages """
         date = datetime.datetime.now().strftime("%d.%m.%Y %H:%M:%S")
         logString = "%s [%s]: %s " % (date, logLevel.name, msg)
-        if forcePrint or self.printLevel.value <= logLevel.value:
+        if forcePrint or self.print_level.value <= logLevel.value:
             print(logString)
 
         self.write_log(logString)
@@ -64,7 +64,7 @@ class Logger():
             with open(self.current_file, 'a') as file:
                 file.write(logString + '\n')
             self.current_size += 1
-            if self.current_size >= self.maxSize:
+            if self.current_size >= self.max_size:
                 self.current_file = self.get_current_log_file()
         except Exception as e:
             print(e)

@@ -50,6 +50,7 @@
                             <th>Domain</th>
                             <th>Crawled/Max</th>
                             <th>New domains</th>
+                            <th>Emails</th>
                             <th>Queue</th>
                             <th>Stop thread</th>
                         </tr>
@@ -63,6 +64,7 @@
                             <td>{{spiderTable.spider.domain}}</td>
                             <td>{{spiderTable.spider.crawled_urls}}/{{spiderTable.spider.max_urls}}</td>
                             <td>{{spiderTable.spider.new_domains|length}}</td>
+                            <td>{{spiderTable.spider.emails|length}}</td>
                             <td>{{spiderTable.queue|length}}</td>
                             <td>
                                 <form action="/threads" method="post">

@@ -12,10 +12,12 @@ class SpiderTable():
         self.spider = spider
         self.runtime = runtime
 
-def start_server(db):
-    global database, connection
+def start_server(db, logSettings):
+    global database, connection, logger
     database = db
     connection = sqlite3.connect(database.database_file, check_same_thread=False)
+    logger = logSettings
+
     log = logging.getLogger('werkzeug')
     log.setLevel(logging.ERROR)
     app.run(host='0.0.0.0', port=4000)
@@ -23,20 +25,27 @@ def start_server(db):
 app = Flask(__name__)
 database = None
 connection = None
+logger = None
 
 @app.route('/')
 def root():
     runtime = get_runtime()
-    threads = get_threads()
+    threads = len(get_threads())
+    spiders = len(get_spiders())
     max_urls = handler.HandlerSettings.max_urls
     refresh_rate = handler.HandlerSettings.refresh_rate
-
-    return render_template('main_page.html', runtime=runtime, threads=threads, max_urls=max_urls, refresh=refresh_rate)
+    
+    databaseFile = "N/A"
+    if database is not None:
+        databaseFile = database.database_file
+    
+    return render_template('main_page.html', runtime=runtime, threads=threads, spiders=spiders,
+                            database=databaseFile, max_urls=max_urls, logger=logger, refresh=refresh_rate)
 
 @app.route('/threads', methods=["GET", "POST"])
 def threads():
     runtime = get_runtime()
-    spiders = get_threads()
+    spiders = len(get_threads())
     max_urls = handler.HandlerSettings.max_urls
     refresh_rate = handler.HandlerSettings.refresh_rate
 
@@ -48,7 +57,7 @@ def threads():
         threads = "%d (%d)" % (spiders, new_threads - spiders)
     
     threadStats = []
-    for index in range(get_threads()):
+    for index in range(len(get_threads())):
         spider = handler.HandlerSettings.spiderList[index]
         runtime = datetime.now() - spider.start_time
         sTable = SpiderTable(index, spider, runtime)
@@ -64,7 +73,7 @@ def threads():
 @app.route('/settings', methods=["GET", "POST"])
 def settings():
     runtime = get_runtime()
-    threads = get_threads()
+    threads = len(get_threads())
     max_urls = handler.HandlerSettings.max_urls
     refresh_rate = handler.HandlerSettings.refresh_rate
 
@@ -119,9 +128,13 @@ def get_runtime():
     """ returns current runtime """
     return datetime.now() - handler.HandlerSettings.startTime
 
+def get_spiders():
+    """ return spiders """
+    return handler.HandlerSettings.spiderList
+
 def get_threads():
-    """ returns amount of threads """
-    return len(handler.HandlerSettings.spiderList)
+    """ return threads """
+    return handler.HandlerSettings.spiderThreadList
 
 def same_value(value1, value2):
     """ Checks if values are the same """

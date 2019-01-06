@@ -84,15 +84,11 @@ class Spider:
 
     def crawl(self):
         """ Iterate through the entire queue stack """
-        last_time = self.start_time
         if self.queue == None:
             self.finish_crawl()
             return
 
         while self.queue and self.crawled_urls < self.max_urls and self.run:
-            if(last_time + timedelta(minutes=1) < datetime.now()):
-                self.log.log(logger.LogLevel.INFO, 'Thread:%s | New: %d | %d/%d' % (self.name, len(self.new_domains), self.crawled_urls, self.max_urls))
-                last_time = datetime.now()
             url = self.queue.pop()
             self.completed_queue.add(url)
             req = self.request(url)
