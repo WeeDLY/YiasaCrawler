@@ -5,12 +5,11 @@ html{
 h1{
     height: 5%;
     text-align: center;
+    font-weight: bold;
 }
 div, form{
     height: 90%;
-    border: 1px solid red;
 }
-
 #menu-container{
     height: auto;
     width: 30%;
@@ -22,6 +21,8 @@ div, form{
     justify-content: center;
 }
 #content{
+    padding-top: 16px;
+    top: 20%;
     margin: 8px;
     height: 85%;
     
@@ -36,10 +37,6 @@ div, form{
 #content div h2{
     text-align: center;
 }
-#content div p{
-    position:relative;
-    left: 2%;
-}
 
 a{
     background-color: #B56B45;
@@ -52,11 +49,20 @@ a{
 a:hover{
     background-color: #FFFD82;
     color: #000000 !important;
+    font-weight: bold;
 }
-
-
 a:visited{
     color:#ffffff;
+}
+
+th, tr:nth-child(even){
+    background-color: #222222;
+}
+table{
+    background-color: #282D2D;
+}
+th{
+    font-weight: bold;
 }
 
 .center{

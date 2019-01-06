@@ -3,25 +3,27 @@
         <meta charset="utf-8" />
         <link rel="stylesheet" type="text/css" href="static/main_css.css">
         <style>
-            #query-container{
-                align-content: center;
-                align-self: center;
-                padding: 1%;
-                height: 70%;
-                width: 80%;
-                left: 0px;
-                right: 0px;
-                position: absolute;
+            #container{
+                height: 10%;
+                width: 30%;
+                padding: 8px;
                 margin: auto;
-                color:#f7ef6a;
-                overflow: auto;
+                background-color: #282D2D;
+                text-align: center;
+            }
+            #container button{
+                width: 50%;
+                margin: auto;
+                margin: 4px;
             }
 
-            th, tr:nth-child(even) {background-color: #222222;}
-            #container{
-                height: 5%;
-                width: 20%;
+            #query-container{
                 padding: 8px;
+                height: 70%;
+                width: fit-content;
+                color:#f7ef6a;
+                overflow: auto;
+                margin: auto;
             }
         </style>
     </head>
@@ -36,8 +38,8 @@
 
         <div id="container" class="center">
             <form action="/database", method="post">
-                <input placeholder="query" type="text" name="query" id="query" />
-                <button type="submit" id="btnSubmit">Go!</button>
+                <textarea rows="4" cols="50" placeholder="query" type="text" name="query" id="query"></textarea>
+                <button type="submit" id="btnSubmit">Query</button>
             </form>
         </div>
 
