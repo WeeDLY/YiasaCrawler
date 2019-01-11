@@ -10,6 +10,14 @@ import util.logger as logger
 import database.query as query
 import bot.handler
 
+class CrawlHistory():
+    """ Class containing information about a crawl """
+    def __init__(self, domain, url, status_code, date):
+        self.domain = domain
+        self.url = url
+        self.status_code = status_code
+        self.date = date
+
 class Spider:
     queue = set()
     re_url = re.compile(
@@ -45,8 +53,10 @@ class Spider:
         self.max_urls = max_urls
         self.start_time = datetime.now()
         self.run = True
+        self.crawl_history = []
+        self.crawl_history_limit = 100
 
-    def to_string(self):
+    def __str__(self):
         return 'Name:%s @domain: %s' % (self.name, self.domain)
     
     def start_crawl(self):
@@ -66,7 +76,7 @@ class Spider:
     
     def request(self, url):
         """ sends a http request to url.
-            Also adds to table 'crawl_history' """
+            Adds crawled url to self.crawl_history """
         self.crawled_urls += 1
         
         try:
@@ -74,12 +84,10 @@ class Spider:
         except Exception as e:
             self.log.log(logger.LogLevel.WARNING, 'Request exception: (%s) %s' % (url, e))
             return None
-        
-        crawlHistory = self.db.query_execute(query.QUERY_INSERT_TABLE_CRAWL_HISTORY(), (self.domain, url, req.status_code, url, datetime.now(), ))
-        if crawlHistory:
-            self.log.log(logger.LogLevel.DEBUG, 'Inserted to crawl_history: %s' % url)
-        else:
-            self.log.log(logger.LogLevel.WARNING, 'Failed to insert to crawl_history: %s' % url)
+
+        self.crawl_history.append(CrawlHistory(self.domain, url, req.status_code, datetime.now()))
+        if len(self.crawl_history) >= self.crawl_history_limit:
+            self.add_crawl_history_db()
         return req
 
     def crawl(self):
@@ -126,6 +134,9 @@ class Spider:
         else:
             self.log.log(logger.LogLevel.CRITICAL, 'Domain: %s was finshed crawling, but does not exist in DB!' % self.domain)
         
+        # Push remaining self.crawl_history to database
+        self.add_crawl_history_db()
+
         # Remove the domain from the 'crawl_queue' table
         domainRemoveQueue = self.db.query_execute(query.QUERY_DELETE_CRAWL_QUEUE(), (self.domain, ))
         if domainRemoveQueue:
@@ -163,6 +174,19 @@ class Spider:
             elif url not in self.queue and url not in self.completed_queue:
                 if self.url_follow_robots(url):
                     self.queue.add(url)
+
+    def add_crawl_history_db(self):
+        """ Adds all objects in self.crawl_history to database """
+        history_success = 0
+        history_error = 0
+        for history in self.crawl_history:
+            success = self.db.query_execute(query.QUERY_INSERT_TABLE_CRAWL_HISTORY(), (history.domain, history.url, history.status_code, history.url, history.date, ))
+            if success:
+                history_success += 1
+            else:
+                history_error += 1
+            self.crawl_history.remove(history)
+        self.log.log(logger.LogLevel.INFO, 'Pushed spider.crawl_history to database. Success: %d, Failed: %d' % (history_success, history_error))
 
     def extract_email(self, text):
         """ Extracts emails from website """
