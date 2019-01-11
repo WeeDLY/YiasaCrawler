@@ -1,12 +1,14 @@
 from flask import Flask, Markup, render_template, request
-from datetime import datetime
+from datetime import datetime, timedelta
 import sys
 import logging
 import sqlite3
 sys.path.append('..')
 import bot.handler as handler
+import database.query as query
 
 class SpiderTable():
+    """ Class that contains every spider stats that are displayed to the web server """
     def __init__(self, index, spider, runtime):
         self.index = index
         self.spider = spider
@@ -38,9 +40,18 @@ def root():
     databaseFile = "N/A"
     if database is not None:
         databaseFile = database.database_file
-    
-    return render_template('main_page.html', runtime=runtime, threads=threads, spiders=spiders,
-                            database=databaseFile, max_urls=max_urls, logger=logger, refresh=refresh_rate)
+
+    crawled_total, email_total = get_database_stats()
+    crawled_last_day, email_last_day = get_database_stats(timedelta(days=1))
+    crawled_last_week, email_last_week = get_database_stats(timedelta(days=7))
+
+    last_day_stats = (crawled_last_day, email_last_day)
+    last_week_stats = (crawled_last_week, email_last_week)
+    total_stats = (crawled_total, email_total)
+
+    return render_template('main_page.html', runtime=runtime, threads=threads, spiders=spiders, max_urls=max_urls,
+                            refresh=refresh_rate, database=databaseFile, logger=logger,
+                            last_day=last_day_stats, last_week=last_week_stats, total=total_stats)
 
 @app.route('/threads', methods=["GET", "POST"])
 def threads():
@@ -123,6 +134,20 @@ def database():
         except Exception as e:
             result = "Could not execute query: %s" % query
     return render_template('database.html', tableHeader=tableHeader, result=result)
+
+def get_database_stats(timespan = None):
+    """ gets database stats within a set timespan """
+    offset = None
+    if timespan == None:
+        offset = datetime.strptime('01 Jan 1990', '%d %b %Y')
+    else:
+        offset = datetime.now() - timespan
+    crawled = database.query_get(query.QUERY_GET_CRAWLED_WITHIN_TIMESPAN(), (offset, ))
+    emails = database.query_get(query.QUERY_GET_EMAILS_WITHIN_TIMESPAN(), (offset, ))
+
+    crawled = get_integer(crawled[0][0])
+    emails = get_integer(emails[0][0])
+    return crawled, emails
 
 def get_runtime():
     """ returns current runtime """

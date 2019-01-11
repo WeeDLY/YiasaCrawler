@@ -32,6 +32,16 @@ def QUERY_GET_DOMAIN_IN_CRAWLED():
     return """ SELECT * FROM crawled
                 WHERE domain = ?"""
 
+def QUERY_GET_EMAILS_WITHIN_TIMESPAN():
+    """ returns amount of emails gotten with a set timespan """
+    return """ SELECT COUNT(email) FROM crawl_information
+                WHERE extracted_date >= ? """
+
+def QUERY_GET_CRAWLED_WITHIN_TIMESPAN():
+    """ returns amount of crawled websites within a set timespan """
+    return """ SELECT COUNT(*) FROM crawled
+                WHERE last_crawled >= ? """
+
 """ INSERT queries """
 def QUERY_INSERT_TABLE_CRAWL_QUEUE():
     """ Insert or ignore into table 'crawl_queue' """

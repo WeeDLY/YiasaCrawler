@@ -20,10 +20,16 @@
                 <p><b>Refresh rate:</b> {{refresh}}</p>
                 <p><b>Database:</b> {{database}}</p>
                 <p><b>Log settings</b></p>
-                <p style="text-indent: 2em;" class="small-text"><b>Folder:</b> {{logger.folder}}&emsp;<b>max_size:</b> {{logger.max_size}}&emsp;<b>print_level:</b> {{logger.print_level}}</p>
+                <p class="small-text"><b>Folder:</b> {{logger.folder}}&emsp;<b>max_size:</b> {{logger.max_size}}&emsp;<b>print_level:</b> {{logger.print_level}}</p>
             </div>
-            <div id="filler">
-                <h2>Filler</h2>
+            <div id="database">
+                <h2>Database stats</h2>
+                <h3>Last 24 hours</h3>
+                <p class="small-text"><b>Crawled:</b> {{last_day[0]}}&emsp;<b>Emails:</b> {{last_day[1]}}&emsp;</p>
+                <h3>Last Week</h3>
+                <p class="small-text"><b>Crawled:</b> {{last_week[0]}}&emsp;<b>Emails:</b> {{last_week[1]}}&emsp;</p>
+                <h3>Total</h3>
+                <p class="small-text"><b>Crawled:</b> {{total[0]}}&emsp;<b>Emails:</b> {{total[1]}}&emsp;</p>
             </div>
         </div>
     </body>
