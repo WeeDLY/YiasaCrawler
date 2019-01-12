@@ -68,12 +68,17 @@ class Handler:
 
             # Restart dead threads with new assignment
             for index in threadStatus["dead"]:
-                self.restart_spider(index)
+                restartThread = threading.Thread(target=self.restart_spider, args=(index, ))
+                restartThread.daemon = True
+                restartThread.start()
+                time.sleep(50) #TODO: Temporary fix. This will crash without a delay. Because of line 112
+                #self.restart_spider(index)
             
             self.fill_queue()
 
             delay = self.delay - (datetime.now() - last_loop)
             if delay.total_seconds() > 0:
+                print('Sleeping for: %d' % delay.total_seconds())
                 time.sleep(delay.total_seconds())
             last_loop = datetime.now()
 
@@ -132,10 +137,10 @@ class Handler:
         t = threading.Thread(target=s.start_crawl, name=self.threadId)
         t.daemon = True
         HandlerSettings.spiderThreadList.append(t)
-
         t.start()
+
         self.threadId += 1
-        self.log.log(logger.LogLevel.INFO, 'Started new spider: %s' % s.to_string())
+        self.log.log(logger.LogLevel.INFO, 'Started new spider: %s' % s)
 
     def get_spider_thread_status(self, threadId):
         """ Gets information about a spider thread, based on threadId """
