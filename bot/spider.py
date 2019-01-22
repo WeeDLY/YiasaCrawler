@@ -4,6 +4,7 @@ import requests
 import re, time
 import sys
 from datetime import datetime, timedelta
+from validate_email_address import validate_email
 sys.path.append('..')
 
 import util.logger as logger
@@ -193,7 +194,12 @@ class Spider:
     def extract_email(self, text):
         """ Extracts emails from website """
         emails = set(re.findall(Spider.re_email, text))
-        self.emails = self.emails.union(emails)
+        valid_emails = []
+        for email in emails:
+            if valid_email(email):
+                valid_emails.append(email)
+
+        self.emails = self.emails.union(valid_emails)
 
     def extract_url(self, soup):
         """ Extract all urls from a soup """
@@ -251,3 +257,7 @@ class Spider:
     def valid_url(self, url):
         """ Checks if a url is valid """
         return re.match(Spider.re_url, url) is not None
+    
+    def valid_email(self, email, check_mx=True):
+        """ Checks if the email is valid """
+        return validate_email(email, check_mx=check_mx)

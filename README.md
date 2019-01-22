@@ -4,6 +4,10 @@ Web crawler
 ## Requirements:
     requests
     BeautifulSoup
+    validate-email-address
+    py3dns
+    sqlite3
+    flask (for webserver)
 
 ### LogLevels:
     Debug: Technical details
