@@ -84,6 +84,7 @@ class Spider:
             req = requests.get(url, timeout=3)
         except requests.exceptions.Timeout as timeout:
             self.log.log(logger.LogLevel.DEBUG, 'Request timed out: %s' % url)
+            return None
         except Exception as e:
             self.log.log(logger.LogLevel.WARNING, 'Request exception: (%s) %s' % (url, e))
             return None
@@ -196,7 +197,7 @@ class Spider:
         emails = set(re.findall(Spider.re_email, text))
         valid_emails = []
         for email in emails:
-            if valid_email(email):
+            if self.valid_email(email):
                 valid_emails.append(email)
 
         self.emails = self.emails.union(valid_emails)

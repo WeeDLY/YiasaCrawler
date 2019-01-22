@@ -71,8 +71,6 @@ class Handler:
                 restartThread = threading.Thread(target=self.restart_spider, args=(index, ))
                 restartThread.daemon = True
                 restartThread.start()
-                time.sleep(50) #TODO: Temporary fix. This will crash without a delay. Because of line 112
-                #self.restart_spider(index)
             
             self.fill_queue()
 
