@@ -71,6 +71,8 @@ class Handler:
                 restartThread = threading.Thread(target=self.restart_spider, args=(index, ))
                 restartThread.daemon = True
                 restartThread.start()
+                time.sleep(0.5)#TODO: Has to be a better way to do this.
+                # Will it be better if I make 1 thread, do all the restarting in it's own function?
             
             self.fill_queue()
 

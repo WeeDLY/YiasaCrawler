@@ -11,6 +11,16 @@ import util.logger as logger
 import database.query as query
 import bot.handler
 
+class Email():
+    """ Class that holds on information about extracted emails """
+    def __init__(self, email, url, extract_date):
+        self.email = email
+        self.url = url
+        self.extract_date = extract_date
+
+    def __str__(self):
+        return '"%s", "%s", "%s"' % (self.email, self.url, self.extract_date)
+
 class CrawlHistory():
     """ Class containing information about a crawl """
     def __init__(self, domain, url, status_code, date):
@@ -115,7 +125,7 @@ class Spider:
             soup = BeautifulSoup(req.text, 'html.parser')
             valid_urls = self.extract_url(soup)
 
-            self.extract_email(req.text)
+            self.extract_email(req.text, req.url)
 
             self.add_to_queue(valid_urls)
             time.sleep(self.crawl_delay)
@@ -156,14 +166,7 @@ class Spider:
                 self.log.log(logger.LogLevel.WARNING, "Failed to add 'crawl_queue': %s" % domain)
         
         # Add emails to db
-        success = failed = 0
-        for email in self.emails:
-            addedEmail = self.db.query_execute(query.QUERY_INSERT_CRAWL_INFORMATION(), (email, self.domain, datetime.now()))
-            if addedEmail:
-                success += 1
-            else:
-                failed += 1
-        self.log.log(logger.LogLevel.DEBUG, "Added emails to db. Success: %d, failed: %d" % (success, failed))
+        self.insert_emails_to_db()
 
         # Push everything to database
         self.db.commit()
@@ -192,13 +195,13 @@ class Spider:
             self.crawl_history.remove(history)
         self.log.log(logger.LogLevel.DEBUG, 'Pushed spider.crawl_history to database. Success: %d, Failed: %d' % (history_success, history_error))
 
-    def extract_email(self, text):
+    def extract_email(self, text, url):
         """ Extracts emails from website """
         emails = set(re.findall(Spider.re_email, text))
         valid_emails = []
         for email in emails:
             if self.valid_email(email):
-                valid_emails.append(email)
+                valid_emails.append(Email(email, url, datetime.now()))
 
         self.emails = self.emails.union(valid_emails)
 
@@ -262,3 +265,24 @@ class Spider:
     def valid_email(self, email, check_mx=True):
         """ Checks if the email is valid """
         return validate_email(email, check_mx=check_mx)
+    
+    def insert_emails_to_db(self):
+        """ Inserts found emails to database """
+        if len(self.emails) <= 0:
+            self.log.log(logger.LogLevel.INFO, "No emails found from: %s" % self.domain)
+            return False
+
+        q = query.QUERY_INSERT_MULTIPLE_CRAWL_INFORMATION()
+        param = ()
+        for email in self.emails:
+            q += "\n(?, ?, ?),"
+            param += (email.email, email.url, email.extract_date)
+        q = q[:-1]
+        q += ";"
+        
+        addedEmails = self.db.query_execute(q, param)
+        if addedEmails:
+            self.log.log(logger.LogLevel.INFO, "Inserted: %d emails from %s" % (len(self.emails), self.domain))
+        else:
+            self.log.log(logger.LogLevel.WARNING, "Failed to insert %d emails from: %s"% (len(self.emails), self.domain))
+        return True
