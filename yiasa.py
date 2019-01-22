@@ -10,7 +10,7 @@ import bot.handler as handler
 
 def startup(args):
     log = logger.Logger('yiasa_log', 'logs')
-    log.log(logger.LogLevel.INFO, 'Yiasabot is starting. DebugMode: %s' % args.debug, forcePrint=True)
+    log.log(logger.LogLevel.INFO, 'Yiasabot is starting. DebugMode: %s' % args.debug, force_print=True)
 
     db = check_database(log)
     if db is None:

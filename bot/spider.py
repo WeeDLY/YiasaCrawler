@@ -66,7 +66,7 @@ class Spider:
 
         req = self.request(self.domain)
         if req is None:
-            self.log.log(logger.LogLevel.CRITICAL, 'Request failed')
+            self.log.log(logger.LogLevel.WARNING, 'Request failed')
             self.finish_crawl()
             return
         soup = BeautifulSoup(req.text, 'html.parser')
@@ -80,7 +80,9 @@ class Spider:
         self.crawled_urls += 1
         
         try:
-            req = requests.get(url)
+            req = requests.get(url, timeout=3)
+        except requests.exceptions.Timeout as timeout:
+            self.log.log(logger.LogLevel.DEBUG, 'Request timed out: %s' % url)
         except Exception as e:
             self.log.log(logger.LogLevel.WARNING, 'Request exception: (%s) %s' % (url, e))
             return None
@@ -101,11 +103,11 @@ class Spider:
             self.completed_queue.add(url)
             req = self.request(url)
             if req is None:
-                self.log.log(logger.LogLevel.ERROR, 'Request is None, skipping')
+                self.log.log(logger.LogLevel.WARNING, 'Request is None, skipping')
                 continue
             
             if req.text is None:
-                self.log.log(logger.LogLevel.ERROR, 'Request.text is None, skipping')
+                self.log.log(logger.LogLevel.WARNING, 'Request.text is None, skipping')
                 continue
 
             soup = BeautifulSoup(req.text, 'html.parser')
@@ -132,7 +134,7 @@ class Spider:
             else:
                 self.log.log(logger.LogLevel.WARNING, 'Unable to insert crawl stats to DB from: %s' % self.name)
         else:
-            self.log.log(logger.LogLevel.CRITICAL, 'Domain: %s was finshed crawling, but does not exist in DB!' % self.domain)
+            self.log.log(logger.LogLevel.ERROR, 'Domain: %s was finshed crawling, but does not exist in DB!' % self.domain)
         
         # Push remaining self.crawl_history to database
         self.add_crawl_history_db()
@@ -159,7 +161,7 @@ class Spider:
                 success += 1
             else:
                 failed += 1
-        self.log.log(logger.LogLevel.INFO, "Added emails to db. Success: %d, failed: %d" % (success, failed))
+        self.log.log(logger.LogLevel.DEBUG, "Added emails to db. Success: %d, failed: %d" % (success, failed))
 
         # Push everything to database
         self.db.commit()
@@ -186,7 +188,7 @@ class Spider:
             else:
                 history_error += 1
             self.crawl_history.remove(history)
-        self.log.log(logger.LogLevel.INFO, 'Pushed spider.crawl_history to database. Success: %d, Failed: %d' % (history_success, history_error))
+        self.log.log(logger.LogLevel.DEBUG, 'Pushed spider.crawl_history to database. Success: %d, Failed: %d' % (history_success, history_error))
 
     def extract_email(self, text):
         """ Extracts emails from website """

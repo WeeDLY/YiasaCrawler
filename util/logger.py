@@ -49,11 +49,11 @@ class Logger():
                 raise
             return False
 
-    def log(self, logLevel, msg, forcePrint=False):
+    def log(self, logLevel, msg, force_print=False):
         """ Logs messages """
         date = datetime.datetime.now().strftime("%d.%m.%Y %H:%M:%S")
         logString = "%s [%s]: %s " % (date, logLevel.name, msg)
-        if forcePrint or self.print_level.value <= logLevel.value:
+        if force_print or self.print_level.value <= logLevel.value:
             print(logString)
 
         self.write_log(logString)

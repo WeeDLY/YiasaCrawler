@@ -10,7 +10,7 @@ import bot.handler as handler
 import server.server as server
 
 def start(log, db, args):
-    log.log(logger.LogLevel.INFO, 'Starting YiasaBot', forcePrint=True)
+    log.log(logger.LogLevel.INFO, 'Starting YiasaBot', force_print=True)
     settings = handler.HandlerSettings()
     settings.set_threads(args.threads)
     handler.HandlerSettings.max_urls = args.urls

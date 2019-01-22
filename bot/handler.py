@@ -107,13 +107,13 @@ class Handler:
         oldSpider = HandlerSettings.spiderList[index]
         oldThread = HandlerSettings.spiderThreadList[index]
         oldThread.join()
-        self.log.log(logger.LogLevel.INFO, 'Restarting thread: %d -> %d' % (oldSpider.name, self.threadId))
         
         # Remove old spider+thread from list
         del HandlerSettings.spiderList[index]
         del HandlerSettings.spiderThreadList[index]
 
         if len(HandlerSettings.spiderList) < self.settings.get_threads():
+            self.log.log(logger.LogLevel.INFO, 'Restarting thread: %d -> %d' % (oldSpider.name, self.threadId))
             self.start_spider()
         else:
             self.log.log(logger.LogLevel.INFO, 'Not restarting spider, due to thread limit')
@@ -123,7 +123,7 @@ class Handler:
         if len(HandlerSettings.queue) > 0:
             domain = HandlerSettings.queue.pop(0)
         else:
-            self.log.log(logger.LogLevel.WARNING, 'queue is empty. Have to refill')
+            self.log.log(logger.LogLevel.DEBUG, 'queue is empty. Filling up queue')
             self.fill_queue()
             domain = HandlerSettings.queue.pop(0)
 
