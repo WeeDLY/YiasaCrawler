@@ -51,17 +51,16 @@ class Handler:
             if Handler.new_thread_amount is not None:
                 self.settings.set_threads(Handler.new_thread_amount)
             
-            print('Threads: %d' % self.settings.get_threads())
-            print('Queue: %s' % HandlerSettings.queue)
 
             # Gets status of all active threads
             threadStatus = self.get_thread_status()
             aliveThreads = len(threadStatus["alive"])
             deadThreads = len(threadStatus["dead"])
             totalThreads = aliveThreads + deadThreads
-            print('Threads running: %d' % totalThreads)
-            print('Alive: %s' % threadStatus["alive"])
-            print('Dead: %s' % threadStatus["dead"])
+
+            print('Threads: %d/%d' % (self.settings.get_threads(), totalThreads))
+            print('Queue: %s' % HandlerSettings.queue)
+            print('Alive/Dead: %d/%d' % (len(threadStatus["alive"]), len(threadStatus["dead"])))
             
             if totalThreads < self.settings.get_threads():
                 self.start_threads()
@@ -135,21 +134,6 @@ class Handler:
         self.threadId += 1
         self.log.log(logger.LogLevel.INFO, 'Started new spider: %s' % s)
 
-    def get_spider_thread_status(self, threadId):
-        """ Gets information about a spider thread, based on threadId """
-        name = HandlerSettings.spiderList[threadId].name
-        start_time = HandlerSettings.spiderList[threadId].start_time
-        crawled_urls = HandlerSettings.spiderList[threadId].crawled_urls
-        queue = HandlerSettings.spiderList[threadId].queue
-        new_domains = HandlerSettings.spiderList[threadId].new_domains
-        crawl_delay = HandlerSettings.spiderList[threadId].crawl_delay
-        print(name)
-        print(start_time)
-        print(crawled_urls)
-        print(queue)
-        print(new_domains)
-        print(crawl_delay)
-    
     def fill_queue(self):
         """ Fills queue with needed urls """
         amount = (self.settings.get_threads() * 2) - len(HandlerSettings.queue)
