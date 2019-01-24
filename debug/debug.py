@@ -13,7 +13,7 @@ def database(log, db):
             debug(log, db)
         elif cmd == 'query':
             q = input('database-debug: query$ ')
-            db.query_execute(q)
+            db.query_execute(q, commit=False)
         elif cmd == 'dump':
             q = input('database-debug: dump$ ')
             db.table_dump(q)

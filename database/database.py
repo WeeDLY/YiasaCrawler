@@ -10,7 +10,8 @@ class Database():
         self.database_file = database_file
         self.connection = sqlite3.connect(self.database_file, check_same_thread=False)
         self.log = log
-        self.lock = Lock()
+        self.execute_lock = Lock()
+        self.commit_lock = Lock()
     
     def check_database(self):
         """ Checks and/or creates the database tables for Yiasa to run """
@@ -100,16 +101,19 @@ class Database():
             self.log.log(logger.LogLevel.ERROR, 'database.query_exists: %s. %s | %s' % (e, q, param))
             return False
 
-    def query_execute(self, q, param=None):
+    def query_execute(self, q, param=None, commit=True):
         """ Executes a query, returns True if executed, otherwise False """
         try:
-            c = self.connection.cursor()
-            if param is None:
-                c.execute(q)
-            else:
-                c.execute(q, param)
-            self.log.log(logger.LogLevel.DEBUG, 'database.query_execute: %s | %s' % (q, param))
-            return True
+            with self.execute_lock:
+                c = self.connection.cursor()
+                if param is None:
+                    c.execute(q)
+                else:
+                    c.execute(q, param)
+                self.log.log(logger.LogLevel.DEBUG, 'database.query_execute: %s | %s' % (q, param))
+                if commit:
+                    self.commit()
+                return True
         except Exception as e:
             self.log.log(logger.LogLevel.ERROR, 'database.query_execute: %s | %s | %s' % (e, q, param))
             return False
@@ -117,7 +121,7 @@ class Database():
     def commit(self):
         """ Commit changes to db """
         try:
-            with self.lock:
+            with self.commit_lock:
                 self.connection.commit()
                 self.log.log(logger.LogLevel.DEBUG, 'Database was commited')
         except Exception as e:

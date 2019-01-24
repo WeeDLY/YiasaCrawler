@@ -159,6 +159,7 @@ class Spider:
         else:
             self.log.log(logger.LogLevel.ERROR, "Unable to remove %s from 'crawl_queue'" % self.domain)
         
+        # TODO: Add domains in bulk
         for domain in self.new_domains:
             domainDB = self.db.query_execute(query.QUERY_INSERT_TABLE_CRAWL_QUEUE(), (domain, 0, 0, datetime.now()))
             if domainDB:
@@ -168,9 +169,6 @@ class Spider:
         
         # Add emails to db
         self.insert_emails_to_db()
-
-        # Push everything to database
-        self.db.commit()
     
     def add_to_queue(self, urls):
         """ Adds a list of urls to the queue """
@@ -195,8 +193,8 @@ class Spider:
             param += (history.domain, history.url, history.status_code, history.url, history.date)
         q = q[:-1]
         q += ";"
-        success = self.db.query_execute(q, param)
-        if success:
+        insertHistory = self.db.query_execute(q, param)
+        if insertHistory:
             self.log.log(logger.LogLevel.DEBUG, 'Pushed(%s): %d entries into crawl_history' % (self.domain, len(self.crawl_history)))
         else:
             self.log.log(logger.LogLevel.ERROR, 'Failed to push(%s): %d entries into crawl_history' % (self.domain, len(self.crawl_history)))
@@ -287,8 +285,8 @@ class Spider:
         q = q[:-1]
         q += ";"
         
-        addedEmails = self.db.query_execute(q, param)
-        if addedEmails:
+        insertedEmails = self.db.query_execute(q, param)
+        if insertedEmails:
             self.log.log(logger.LogLevel.INFO, "Inserted: %d emails from %s" % (len(self.emails), self.domain))
         else:
             self.log.log(logger.LogLevel.WARNING, "Failed to insert %d emails from: %s"% (len(self.emails), self.domain))

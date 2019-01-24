@@ -67,15 +67,13 @@ class Handler:
                 self.start_threads()
 
             # Restart dead threads with new assignment
-            for index in threadStatus["dead"]:
-                restartThread = threading.Thread(target=self.restart_spider, args=(index, ))
+            for thread, spider in threadStatus["dead"]:
+                restartThread = threading.Thread(target=self.restart_spider, args=(thread, spider ))
                 restartThread.daemon = True
                 restartThread.start()
-                time.sleep(0.5)#TODO: Has to be a better way to do this.
-                # Will it be better if I make 1 thread, do all the restarting in it's own function?
             
             self.fill_queue()
-
+            
             delay = self.delay - (datetime.now() - last_loop)
             if delay.total_seconds() > 0:
                 print('Sleeping for: %d' % delay.total_seconds())
@@ -86,11 +84,12 @@ class Handler:
         """ returns associate list with dead/alive threads, based on index """
         threadStatus = {"dead":[], "alive":[]}
         for index in range(len(HandlerSettings.spiderThreadList)):
-            alive = HandlerSettings.spiderThreadList[index].isAlive()
-            if alive:
-                threadStatus["alive"].append(index)
+            thread = HandlerSettings.spiderThreadList[index]
+            spider = HandlerSettings.spiderList[index]
+            if thread.isAlive():
+                threadStatus["alive"].append((thread, spider))
             else:
-                threadStatus["dead"].append(index)
+                threadStatus["dead"].append((thread, spider))
         return threadStatus
 
     def start_threads(self):
@@ -98,22 +97,16 @@ class Handler:
         while len(HandlerSettings.spiderThreadList) < self.settings.get_threads() and len(HandlerSettings.queue) > 0:
             self.start_spider()
 
-    def restart_spider(self, index):
+    def restart_spider(self, thread, spider):
         """ remakes a spider thread """
-        if index > len(HandlerSettings.spiderList) - 1:
-            self.log.log(logger.LogLevel.ERROR, "Can't restart spider: index/len(spiderList): %d/%d" % (index, len(HandlerSettings.spiderList)))
-            return
-
-        oldSpider = HandlerSettings.spiderList[index]
-        oldThread = HandlerSettings.spiderThreadList[index]
-        oldThread.join()
+        thread.join()
         
         # Remove old spider+thread from list
-        del HandlerSettings.spiderList[index]
-        del HandlerSettings.spiderThreadList[index]
+        HandlerSettings.spiderList.remove(spider)
+        HandlerSettings.spiderThreadList.remove(thread)
 
         if len(HandlerSettings.spiderList) < self.settings.get_threads():
-            self.log.log(logger.LogLevel.INFO, 'Restarting thread: %d -> %d' % (oldSpider.name, self.threadId))
+            self.log.log(logger.LogLevel.INFO, 'Restarting thread: %d -> %d' % (spider.name, self.threadId))
             self.start_spider()
         else:
             self.log.log(logger.LogLevel.INFO, 'Not restarting spider, due to thread limit')
