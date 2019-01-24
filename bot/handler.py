@@ -17,7 +17,7 @@ class HandlerSettings():
     robots = True
     run = True
     max_urls = 100
-    refresh = 0.4
+    refresh = 2.0
 
     def __init__(self):
         self._threads = 0
