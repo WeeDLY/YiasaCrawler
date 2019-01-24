@@ -101,7 +101,8 @@ class Spider:
 
         self.crawl_history.append(CrawlHistory(self.domain, url, req.status_code, datetime.now()))
         if len(self.crawl_history) >= self.crawl_history_limit:
-            self.add_crawl_history_db()
+            self.log.log(logger.LogLevel.DEBUG, '%d >= %d' % (len(self.crawl_history), self.crawl_history_limit))
+            self.insert_crawl_history_db()
         return req
 
     def crawl(self):
@@ -149,7 +150,7 @@ class Spider:
             self.log.log(logger.LogLevel.ERROR, 'Domain: %s was finshed crawling, but does not exist in DB!' % self.domain)
         
         # Push remaining self.crawl_history to database
-        self.add_crawl_history_db()
+        self.insert_crawl_history_db()
 
         # Remove the domain from the 'crawl_queue' table
         domainRemoveQueue = self.db.query_execute(query.QUERY_DELETE_CRAWL_QUEUE(), (self.domain, ))
@@ -182,18 +183,24 @@ class Spider:
                 if self.url_follow_robots(url):
                     self.queue.add(url)
 
-    def add_crawl_history_db(self):
+    def insert_crawl_history_db(self):
         """ Adds all objects in self.crawl_history to database """
-        history_success = 0
-        history_error = 0
+        q = "INSERT OR REPLACE INTO crawl_history(id, url, status_code, amount_crawled, last_crawled) VALUES"
+        param = ()
+        if len(self.crawl_history) <= 0:
+            return None
+
         for history in self.crawl_history:
-            success = self.db.query_execute(query.QUERY_INSERT_TABLE_CRAWL_HISTORY(), (history.domain, history.url, history.status_code, history.url, history.date, ))
-            if success:
-                history_success += 1
-            else:
-                history_error += 1
-            self.crawl_history.remove(history)
-        self.log.log(logger.LogLevel.DEBUG, 'Pushed spider.crawl_history to database. Success: %d, Failed: %d' % (history_success, history_error))
+            q += "\n((SELECT rowid FROM crawled WHERE domain = ?), ?, ?, (SELECT CASE WHEN COUNT(1) > 0 THEN amount_crawled+1 ELSE 1 END AS [Value] FROM crawl_history WHERE url = ?), ?),"
+            param += (history.domain, history.url, history.status_code, history.url, history.date)
+        q = q[:-1]
+        q += ";"
+        success = self.db.query_execute(q, param)
+        if success:
+            self.log.log(logger.LogLevel.DEBUG, 'Pushed(%s): %d entries into crawl_history' % (self.domain, len(self.crawl_history)))
+        else:
+            self.log.log(logger.LogLevel.ERROR, 'Failed to push(%s): %d entries into crawl_history' % (self.domain, len(self.crawl_history)))
+        self.crawl_history = []
 
     def extract_email(self, text, url):
         """ Extracts emails from website """
