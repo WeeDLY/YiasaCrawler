@@ -11,8 +11,16 @@ import util.logger as logger
 import database.query as query
 import bot.handler
 
+class Domain():
+    """ Class that holds information about newly found domains """
+    def __init__(self, domain, priority, started, date_added):
+        self.domain = domain
+        self.priority = priority
+        self.started = started
+        self.date_added = date_added
+
 class Email():
-    """ Class that holds on information about extracted emails """
+    """ Class that holds information about extracted emails """
     def __init__(self, email, url, extract_date):
         self.email = email
         self.url = url
@@ -82,7 +90,7 @@ class Spider:
             return
         soup = BeautifulSoup(req.text, 'html.parser')
         valid_urls = self.extract_url(soup)
-        self.add_to_queue(valid_urls)
+        self.parse_urls(valid_urls)
         self.crawl()
     
     def request(self, url):
@@ -128,7 +136,7 @@ class Spider:
 
             self.extract_email(req.text, req.url)
 
-            self.add_to_queue(valid_urls)
+            self.parse_urls(valid_urls)
             time.sleep(self.crawl_delay)
         
         if self.run:
@@ -160,23 +168,38 @@ class Spider:
             self.log.log(logger.LogLevel.ERROR, "Unable to remove %s from 'crawl_queue'" % self.domain)
         
         # TODO: Add domains in bulk
-        for domain in self.new_domains:
-            domainDB = self.db.query_execute(query.QUERY_INSERT_TABLE_CRAWL_QUEUE(), (domain, 0, 0, datetime.now()))
-            if domainDB:
-                self.log.log(logger.LogLevel.DEBUG, "Inserted to add 'crawl_queue': %s" % domain)
-            else:
-                self.log.log(logger.LogLevel.WARNING, "Failed to add 'crawl_queue': %s" % domain)
+        self.insert_new_domains()
         
         # Add emails to db
         self.insert_emails_to_db()
     
-    def add_to_queue(self, urls):
-        """ Adds a list of urls to the queue """
+    def insert_new_domains(self):
+        """ Insert new found domains to db to be crawled later """
+        if len(self.new_domains) <= 0:
+            return None
+            
+        q = "INSERT OR IGNORE INTO crawl_queue(domain, priority, started, added) VALUES"
+        param = ()
+        for domain in self.new_domains:
+            q += "(?, ?, ?, ?),"
+            param += (domain.domain, domain.priority, domain.started, domain.date_added)
+        q = q[:-1]
+        q += ";"
+        
+        insertedDomains = self.db.query_execute(q, param)
+        if insertedDomains:
+            self.log.log(logger.LogLevel.INFO, "Inserted: %d domains from %s" % (len(self.new_domains), self.domain))
+        else:
+            self.log.log(logger.LogLevel.INFO, "Failed to insert: %d domains from %s" % (len(self.new_domains), self.domain))
+        return True
+
+    def parse_urls(self, urls):
+        """ Parse all urls and takes care of them """
         for url in urls:
             urlParsed = urlparse(url)
             domain = '%s://%s' % (urlParsed.scheme, urlParsed.netloc)
             if self.domain != domain:
-                self.new_domains.add(domain)
+                self.new_domains.add(Domain(domain, 0, 0, datetime.now()))
             elif url not in self.queue and url not in self.completed_queue:
                 if self.url_follow_robots(url):
                     self.queue.add(url)
