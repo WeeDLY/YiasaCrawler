@@ -6,13 +6,7 @@ import sqlite3
 sys.path.append('..')
 import bot.handler as handler
 import database.query as query
-
-class SpiderTable():
-    """ Class that contains every spider stats that are displayed to the web server """
-    def __init__(self, index, spider, runtime):
-        self.index = index
-        self.spider = spider
-        self.runtime = runtime
+from util.classes import SpiderTable
 
 def start_server(db, logSettings):
     global database, connection, logger

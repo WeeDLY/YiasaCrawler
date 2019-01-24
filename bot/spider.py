@@ -8,34 +8,9 @@ from validate_email_address import validate_email
 sys.path.append('..')
 
 import util.logger as logger
+import util.classes as classes
 import database.query as query
 import bot.handler
-
-class Domain():
-    """ Class that holds information about newly found domains """
-    def __init__(self, domain, priority, started, date_added):
-        self.domain = domain
-        self.priority = priority
-        self.started = started
-        self.date_added = date_added
-
-class Email():
-    """ Class that holds information about extracted emails """
-    def __init__(self, email, url, extract_date):
-        self.email = email
-        self.url = url
-        self.extract_date = extract_date
-
-    def __str__(self):
-        return '"%s", "%s", "%s"' % (self.email, self.url, self.extract_date)
-
-class CrawlHistory():
-    """ Class containing information about a crawl """
-    def __init__(self, domain, url, status_code, date):
-        self.domain = domain
-        self.url = url
-        self.status_code = status_code
-        self.date = date
 
 class Spider:
     queue = set()
@@ -50,11 +25,6 @@ class Spider:
     re_email = re.compile(
         """([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)"""
     )
-
-    @staticmethod
-    def print_queue():
-        print(len(Spider.queue))
-        print(Spider.queue)
 
     def __init__(self, log, db, name, domain, max_urls):
         self.log = log
@@ -92,26 +62,6 @@ class Spider:
         valid_urls = self.extract_url(soup)
         self.parse_urls(valid_urls)
         self.crawl()
-    
-    def request(self, url):
-        """ sends a http request to url.
-            Adds crawled url to self.crawl_history """
-        self.crawled_urls += 1
-        
-        try:
-            req = requests.get(url, timeout=3)
-        except requests.exceptions.Timeout as timeout:
-            self.log.log(logger.LogLevel.DEBUG, 'Request timed out: %s' % url)
-            return None
-        except Exception as e:
-            self.log.log(logger.LogLevel.WARNING, 'Request exception: (%s) %s' % (url, e))
-            return None
-
-        self.crawl_history.append(CrawlHistory(self.domain, url, req.status_code, datetime.now()))
-        if len(self.crawl_history) >= self.crawl_history_limit:
-            self.log.log(logger.LogLevel.DEBUG, '%d >= %d' % (len(self.crawl_history), self.crawl_history_limit))
-            self.insert_crawl_history_db()
-        return req
 
     def crawl(self):
         """ Iterate through the entire queue stack """
@@ -158,7 +108,7 @@ class Spider:
             self.log.log(logger.LogLevel.ERROR, 'Domain: %s was finshed crawling, but does not exist in DB!' % self.domain)
         
         # Push remaining self.crawl_history to database
-        self.insert_crawl_history_db()
+        self.insert_crawl_history()
 
         # Remove the domain from the 'crawl_queue' table
         domainRemoveQueue = self.db.query_execute(query.QUERY_DELETE_CRAWL_QUEUE(), (self.domain, ))
@@ -171,86 +121,27 @@ class Spider:
         self.insert_new_domains()
         
         # Add emails to db
-        self.insert_emails_to_db()
+        self.insert_emails()
     
-    def insert_new_domains(self):
-        """ Insert new found domains to db to be crawled later """
-        if len(self.new_domains) <= 0:
-            return None
-            
-        q = "INSERT OR IGNORE INTO crawl_queue(domain, priority, started, added) VALUES"
-        param = ()
-        for domain in self.new_domains:
-            q += "(?, ?, ?, ?),"
-            param += (domain.domain, domain.priority, domain.started, domain.date_added)
-        q = q[:-1]
-        q += ";"
+    def request(self, url):
+        """ sends a http request to url.
+            Adds crawled url to self.crawl_history """
+        self.crawled_urls += 1
         
-        insertedDomains = self.db.query_execute(q, param)
-        if insertedDomains:
-            self.log.log(logger.LogLevel.INFO, "Inserted: %d domains from %s" % (len(self.new_domains), self.domain))
-        else:
-            self.log.log(logger.LogLevel.INFO, "Failed to insert: %d domains from %s" % (len(self.new_domains), self.domain))
-        return True
-
-    def parse_urls(self, urls):
-        """ Parse all urls and takes care of them """
-        for url in urls:
-            urlParsed = urlparse(url)
-            domain = '%s://%s' % (urlParsed.scheme, urlParsed.netloc)
-            if self.domain != domain:
-                self.new_domains.add(Domain(domain, 0, 0, datetime.now()))
-            elif url not in self.queue and url not in self.completed_queue:
-                if self.url_follow_robots(url):
-                    self.queue.add(url)
-
-    def insert_crawl_history_db(self):
-        """ Adds all objects in self.crawl_history to database """
-        q = "INSERT OR REPLACE INTO crawl_history(id, url, status_code, amount_crawled, last_crawled) VALUES"
-        param = ()
-        if len(self.crawl_history) <= 0:
+        try:
+            req = requests.get(url, timeout=3)
+        except requests.exceptions.Timeout as timeout:
+            self.log.log(logger.LogLevel.DEBUG, 'Request timed out: %s' % url)
+            return None
+        except Exception as e:
+            self.log.log(logger.LogLevel.WARNING, 'Request exception: (%s) %s' % (url, e))
             return None
 
-        for history in self.crawl_history:
-            q += "\n((SELECT rowid FROM crawled WHERE domain = ?), ?, ?, (SELECT CASE WHEN COUNT(1) > 0 THEN amount_crawled+1 ELSE 1 END AS [Value] FROM crawl_history WHERE url = ?), ?),"
-            param += (history.domain, history.url, history.status_code, history.url, history.date)
-        q = q[:-1]
-        q += ";"
-        insertHistory = self.db.query_execute(q, param)
-        if insertHistory:
-            self.log.log(logger.LogLevel.DEBUG, 'Pushed(%s): %d entries into crawl_history' % (self.domain, len(self.crawl_history)))
-        else:
-            self.log.log(logger.LogLevel.ERROR, 'Failed to push(%s): %d entries into crawl_history' % (self.domain, len(self.crawl_history)))
-        self.crawl_history = []
-
-    def extract_email(self, text, url):
-        """ Extracts emails from website """
-        emails = set(re.findall(Spider.re_email, text))
-        valid_emails = []
-        for email in emails:
-            if self.valid_email(email):
-                valid_emails.append(Email(email, url, datetime.now()))
-
-        self.emails = self.emails.union(valid_emails)
-
-    def extract_url(self, soup):
-        """ Extract all urls from a soup """
-        valid_urls = set()
-        urls = [link.get('href') for link in soup.find_all('a', href=True)]
-        for url in urls:
-            if self.valid_url(url):
-                valid_urls.add(url)
-                continue
-            if url.startswith('mailto'):
-                continue
-            if url == '':
-                continue
-            url = url[1:len(url)] if url[0] == '.' else url # Remove '.' prefix in url, if websites use it
-            url = url if url[0] == '/' else '/%s' % url # Adds '/' to url, if it's a relative path url
-            url = '%s%s' % (self.domain, url)
-            if self.valid_url(url):
-                valid_urls.add(url)
-        return valid_urls
+        self.crawl_history.append(classes.CrawlHistory(self.domain, url, req.status_code, datetime.now()))
+        if len(self.crawl_history) >= self.crawl_history_limit:
+            self.log.log(logger.LogLevel.DEBUG, '%d >= %d' % (len(self.crawl_history), self.crawl_history_limit))
+            self.insert_crawl_history()
+        return req
 
     def url_follow_robots(self, url):
         """ Checks if a url breaks the robots.txt rules """
@@ -259,6 +150,17 @@ class Spider:
             if invalid:
                 return False
         return True
+
+    def parse_urls(self, urls):
+        """ Parse all urls and takes care of them """
+        for url in urls:
+            urlParsed = urlparse(url)
+            domain = '%s://%s' % (urlParsed.scheme, urlParsed.netloc)
+            if self.domain != domain:
+                self.new_domains.add(classes.Domain(domain, 0, 0, datetime.now()))
+            elif url not in self.queue and url not in self.completed_queue:
+                if self.url_follow_robots(url):
+                    self.queue.add(url)
 
     def parse_robots(self):
         """ Parses robots.txt. disallow/allow is placed in self.robots """
@@ -286,6 +188,35 @@ class Spider:
                     delay = int(re.search('\d+', line).group())
                     self.crawl_delay = delay
 
+    def extract_email(self, text, url):
+        """ Extracts emails from website """
+        emails = set(re.findall(Spider.re_email, text))
+        valid_emails = []
+        for email in emails:
+            if self.valid_email(email):
+                valid_emails.append(classes.Email(email, url, datetime.now()))
+
+        self.emails = self.emails.union(valid_emails)
+
+    def extract_url(self, soup):
+        """ Extract all urls from a soup """
+        valid_urls = set()
+        urls = [link.get('href') for link in soup.find_all('a', href=True)]
+        for url in urls:
+            if self.valid_url(url):
+                valid_urls.add(url)
+                continue
+            if url.startswith('mailto'):
+                continue
+            if url == '':
+                continue
+            url = url[1:len(url)] if url[0] == '.' else url # Remove '.' prefix in url, if websites use it
+            url = url if url[0] == '/' else '/%s' % url # Adds '/' to url, if it's a relative path url
+            url = '%s%s' % (self.domain, url)
+            if self.valid_url(url):
+                valid_urls.add(url)
+        return valid_urls
+
     def valid_url(self, url):
         """ Checks if a url is valid """
         return re.match(Spider.re_url, url) is not None
@@ -294,7 +225,46 @@ class Spider:
         """ Checks if the email is valid """
         return validate_email(email, check_mx=check_mx)
     
-    def insert_emails_to_db(self):
+    def insert_new_domains(self):
+        """ Insert new found domains to db to be crawled later """
+        if len(self.new_domains) <= 0:
+            return None
+            
+        q = "INSERT OR IGNORE INTO crawl_queue(domain, priority, started, added) VALUES"
+        param = ()
+        for domain in self.new_domains:
+            q += "(?, ?, ?, ?),"
+            param += (domain.domain, domain.priority, domain.started, domain.date_added)
+        q = q[:-1]
+        q += ";"
+        
+        insertedDomains = self.db.query_execute(q, param)
+        if insertedDomains:
+            self.log.log(logger.LogLevel.INFO, "Inserted: %d domains from %s" % (len(self.new_domains), self.domain))
+        else:
+            self.log.log(logger.LogLevel.INFO, "Failed to insert: %d domains from %s" % (len(self.new_domains), self.domain))
+        return True
+
+    def insert_crawl_history(self):
+        """ Adds all objects in self.crawl_history to database """
+        q = "INSERT OR REPLACE INTO crawl_history(id, url, status_code, amount_crawled, last_crawled) VALUES"
+        param = ()
+        if len(self.crawl_history) <= 0:
+            return None
+
+        for history in self.crawl_history:
+            q += "\n((SELECT rowid FROM crawled WHERE domain = ?), ?, ?, (SELECT CASE WHEN COUNT(1) > 0 THEN amount_crawled+1 ELSE 1 END AS [Value] FROM crawl_history WHERE url = ?), ?),"
+            param += (history.domain, history.url, history.status_code, history.url, history.date)
+        q = q[:-1]
+        q += ";"
+        insertHistory = self.db.query_execute(q, param)
+        if insertHistory:
+            self.log.log(logger.LogLevel.DEBUG, 'Pushed(%s): %d entries into crawl_history' % (self.domain, len(self.crawl_history)))
+        else:
+            self.log.log(logger.LogLevel.ERROR, 'Failed to push(%s): %d entries into crawl_history' % (self.domain, len(self.crawl_history)))
+        self.crawl_history = []
+
+    def insert_emails(self):
         """ Inserts found emails to database """
         if len(self.emails) <= 0:
             self.log.log(logger.LogLevel.INFO, "No emails found from: %s" % self.domain)

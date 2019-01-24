@@ -59,8 +59,8 @@ class Handler:
             totalThreads = aliveThreads + deadThreads
 
             print('Threads: %d/%d' % (self.settings.get_threads(), totalThreads))
-            print('Queue: %s' % HandlerSettings.queue)
             print('Alive/Dead: %d/%d' % (len(threadStatus["alive"]), len(threadStatus["dead"])))
+            print('Queue: %s' % HandlerSettings.queue)
             
             if totalThreads < self.settings.get_threads():
                 self.start_threads()
@@ -137,7 +137,7 @@ class Handler:
     def fill_queue(self):
         """ Fills queue with needed urls """
         amount = (self.settings.get_threads() * 2) - len(HandlerSettings.queue)
-        print('Queue length: %d/%d. Getting: %d' % (len(HandlerSettings.queue), self.settings.get_threads() * 2, amount))
+        self.log.log(logger.LogLevel.DEBUG, 'Queue length: %d/%d. Getting: %d' % (len(HandlerSettings.queue), self.settings.get_threads() * 2, amount))
         if amount < 0:
             return
 
