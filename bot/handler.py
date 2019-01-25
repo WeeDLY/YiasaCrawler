@@ -1,3 +1,4 @@
+import gc
 import time
 import threading
 from datetime import timedelta, datetime
@@ -46,11 +47,11 @@ class Handler:
     def run(self):
         self.fill_queue()
         self.start_threads()
+        iterations = 0
         last_loop = datetime.now()
         while self.run:
             if Handler.new_thread_amount is not None:
                 self.settings.set_threads(Handler.new_thread_amount)
-            
 
             # Gets status of all active threads
             threadStatus = self.get_thread_status()
@@ -78,6 +79,9 @@ class Handler:
                 print('Sleeping for: %d' % delay.total_seconds())
                 time.sleep(delay.total_seconds())
             last_loop = datetime.now()
+            if iterations > 100:
+                gc.collect()
+            iterations += 1
 
     def get_thread_status(self):
         """ returns associate list with dead/alive threads, based on index """
