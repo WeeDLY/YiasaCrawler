@@ -31,9 +31,6 @@ def start(log, db, args):
     if args.server:
         server.start_server(db, log)
     
-    while True:
-        time.sleep(5*2)
-
 def fill_database(log, db):
     """ Function that fills database with 'starting' urls """
     default_urls = [
