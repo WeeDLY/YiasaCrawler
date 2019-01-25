@@ -10,20 +10,63 @@
                 margin: auto;
                 background-color: #282D2D;
                 text-align: center;
+                display: flex;
+                flex-direction: column;
             }
             #container button{
                 width: 50%;
                 margin: auto;
-                margin: 4px;
             }
-
             #query-container{
                 padding: 8px;
                 height: 70%;
                 width: fit-content;
                 color:#f7ef6a;
-                overflow: auto;
                 margin: auto;
+            }
+            thead{
+                display: block;
+            }
+            tbody{
+                display: block;
+                overflow: auto;
+            }
+            @media screen and (max-height: 1500px){
+                tbody{
+                    height: 700px;
+                }
+            }
+            @media screen and (max-height: 1000px) {
+                tbody{
+                    height: 500px;
+                }
+            }
+            @media screen and (max-height: 750px){
+                #container{
+                    height: 20%;
+                }
+                tbody{
+                    height: 300px;
+                }
+            }
+            @media screen and (max-height: 600px){
+                #container{
+                    height: 25%;
+                }
+                tbody{
+                    height: 225px;
+                }
+            }
+            @media screen and (max-height: 400px){
+                #container{
+                    height: 30%;
+                }
+                tbody{
+                    height: 150;
+                }
+            }
+            textarea{
+                width: 100%;
             }
         </style>
     </head>
