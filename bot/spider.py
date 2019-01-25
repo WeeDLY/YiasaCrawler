@@ -240,9 +240,9 @@ class Spider:
         
         insertedDomains = self.db.query_execute(q, param)
         if insertedDomains:
-            self.log.log(logger.LogLevel.INFO, "Inserted: %d domains from %s" % (len(self.new_domains), self.domain))
+            self.log.log(logger.LogLevel.DEBUG, "Inserted: %d domains from %s" % (len(self.new_domains), self.domain))
         else:
-            self.log.log(logger.LogLevel.INFO, "Failed to insert: %d domains from %s" % (len(self.new_domains), self.domain))
+            self.log.log(logger.LogLevel.ERROR, "Failed to insert: %d domains from %s" % (len(self.new_domains), self.domain))
         return True
 
     def insert_crawl_history(self):
@@ -280,7 +280,7 @@ class Spider:
         
         insertedEmails = self.db.query_execute(q, param)
         if insertedEmails:
-            self.log.log(logger.LogLevel.INFO, "Inserted: %d emails from %s" % (len(self.emails), self.domain))
+            self.log.log(logger.LogLevel.DEBUG, "Inserted: %d emails from %s" % (len(self.emails), self.domain))
         else:
-            self.log.log(logger.LogLevel.WARNING, "Failed to insert %d emails from: %s"% (len(self.emails), self.domain))
+            self.log.log(logger.LogLevel.ERROR, "Failed to insert %d emails from: %s"% (len(self.emails), self.domain))
         return True
