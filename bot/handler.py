@@ -27,7 +27,10 @@ class HandlerSettings():
         return self._threads
         
     def set_threads(self, value):
-        if Handler.new_thread_amount == value:
+        """if Handler.new_thread_amount == value:
+            Handler.new_thread_amount = None
+        """
+        if len(self.spiderThreadList) == value:
             Handler.new_thread_amount = None
         self._threads = value
     
@@ -78,10 +81,11 @@ class Handler:
             if delay.total_seconds() > 0:
                 print('Sleeping for: %d' % delay.total_seconds())
                 time.sleep(delay.total_seconds())
-            last_loop = datetime.now()
+            
             if iterations > 100:
                 gc.collect()
             iterations += 1
+            last_loop = datetime.now()
 
     def get_thread_status(self):
         """ returns associate list with dead/alive threads, based on index """

@@ -116,9 +116,6 @@ class Spider:
             self.log.log(logger.LogLevel.INFO, "Removed %s from 'crawl_queue'" % self.domain)
         else:
             self.log.log(logger.LogLevel.ERROR, "Unable to remove %s from 'crawl_queue'" % self.domain)
-        
-        for new_domains in self.new_domains:
-            print('NEW_DOMAINS: %s' % new_domains.domain)
 
         self.insert_new_domains()
         

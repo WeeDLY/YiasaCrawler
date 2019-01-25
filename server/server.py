@@ -79,6 +79,8 @@ def threads():
 def settings():
     runtime = get_runtime()
     threads = len(get_threads())
+    if handler.Handler.new_thread_amount is not None:
+        threads = handler.Handler.new_thread_amount
     max_urls = handler.HandlerSettings.max_urls
     refresh_rate = handler.HandlerSettings.refresh_rate
 
