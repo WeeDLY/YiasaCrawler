@@ -98,6 +98,7 @@ class Handler:
 
     def restart_spider(self, thread, spider):
         """ remakes a spider thread """
+        spider.run = False
         thread.join()
         
         # Remove old spider+thread from list
