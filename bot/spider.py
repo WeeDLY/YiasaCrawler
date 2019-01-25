@@ -117,7 +117,9 @@ class Spider:
         else:
             self.log.log(logger.LogLevel.ERROR, "Unable to remove %s from 'crawl_queue'" % self.domain)
         
-        # TODO: Add domains in bulk
+        for new_domains in self.new_domains:
+            print('NEW_DOMAINS: %s' % new_domains.domain)
+
         self.insert_new_domains()
         
         # Add emails to db

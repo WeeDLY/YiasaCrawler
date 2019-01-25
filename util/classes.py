@@ -12,6 +12,13 @@ class Domain():
         self.priority = priority
         self.started = started
         self.date_added = date_added
+    
+    def __hash__(self):
+        return hash(self.domain)
+    
+    def __eq__(self, other):
+        if not isinstance(other, type(self)): return NotImplemented
+        return self.domain == other.domain
 
 class Email():
     """ Class that holds information about extracted emails """
