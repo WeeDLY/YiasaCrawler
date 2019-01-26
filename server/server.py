@@ -26,6 +26,9 @@ log = None
 
 @app.route('/')
 def root():
+    # TODO: Remove the datetime test. Just for testing where the delay lays
+    start = datetime.now()
+
     runtime = get_runtime()
     threads = len(get_threads())
     spiders = len(get_spiders())
@@ -38,8 +41,7 @@ def root():
 
     databaseStats = []
 
-    start = datetime.now()
-    log.log(logger.LogLevel.INFO, '/root, BEFORE db queries')
+    log.log(logger.LogLevel.INFO, '/root, BEFORE db queries | %s' % (datetime.now() - start))
     databaseStats.append(get_database_stats(timedelta(days=1)))
     log.log(logger.LogLevel.INFO, '/root, AFTER days=1 | %s' % (datetime.now() - start))
     databaseStats.append(get_database_stats(timedelta(days=7)))
