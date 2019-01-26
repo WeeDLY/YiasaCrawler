@@ -7,21 +7,22 @@ sys.path.append('..')
 import bot.handler as handler
 import database.query as query
 from util.classes import SpiderTable, DatabaseStats
+import util.logger as logger
 
 def start_server(db, logSettings):
-    global database, connection, logger
+    global database, connection, log
     database = db
     connection = sqlite3.connect(database.database_file, check_same_thread=False)
-    logger = logSettings
+    log = logSettings
 
-    log = logging.getLogger('werkzeug')
-    log.setLevel(logging.ERROR)
+    l = logging.getLogger('werkzeug')
+    l.setLevel(logging.ERROR)
     app.run(host='0.0.0.0', port=4000)
 
 app = Flask(__name__)
 database = None
 connection = None
-logger = None
+log = None
 
 @app.route('/')
 def root():
@@ -36,12 +37,16 @@ def root():
         databaseFile = database.database_file
 
     databaseStats = []
+    log.log(logger.LogLevel.INFO, '/root, BEFORE db queries')
     databaseStats.append(get_database_stats(timedelta(days=1)))
+    log.log(logger.LogLevel.INFO, '/root, AFTER days=1')
     databaseStats.append(get_database_stats(timedelta(days=7)))
+    log.log(logger.LogLevel.INFO, '/root, AFTER days=7')
     databaseStats.append(get_database_stats())
+    log.log(logger.LogLevel.INFO, '/root, AFTER total')
 
     return render_template('main_page.html', runtime=runtime, threads=threads, spiders=spiders, max_urls=max_urls,
-                            refresh=refresh_rate, database=databaseFile, logger=logger,
+                            refresh=refresh_rate, database=databaseFile, logger=log,
                             databaseStats=databaseStats)
 
 @app.route('/threads', methods=["GET", "POST"])
