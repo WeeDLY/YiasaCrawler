@@ -136,10 +136,7 @@ def get_database_stats(timespan = None):
     else:
         offset = datetime.now() - timespan
     
-    q = query.QUERY_GET_DATABASE_STATS_WITHIN_TIMESPAN()
-    param = (offset, offset)
-
-    result = database.query_get(q, param,)
+    result = database.query_get(query.QUERY_GET_DATABASE_STATS_WITHIN_TIMESPAN(), (offset, offset, ))
     if timespan is None:
         timespan = "Total"
         
