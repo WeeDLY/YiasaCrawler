@@ -37,7 +37,6 @@ def root():
 
     databaseStats = []
     databaseStats.append(get_database_stats(timedelta(days=1)))
-    databaseStats.append(get_database_stats(timedelta(days=1)))
     databaseStats.append(get_database_stats(timedelta(days=7)))
     databaseStats.append(get_database_stats())
 

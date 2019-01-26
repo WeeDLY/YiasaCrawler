@@ -23,6 +23,7 @@
                 <p class="small-text"><b>Folder:</b> {{logger.folder}}&emsp;<b>max_size:</b> {{logger.max_size}}&emsp;<b>print_level:</b> {{logger.print_level}}</p>
             </div>
             <div id="database">
+                <h2>Database stats</h2>
                 {% for stats in databaseStats %}
                 <h3>{{stats.timespan}}</h3>
                 <p class="small-text"><b>Crawled:</b> {{stats.crawled}}&emsp;<b>Emails:</b> {{stats.email}}&emsp;</p>
