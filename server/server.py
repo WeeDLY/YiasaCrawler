@@ -37,13 +37,15 @@ def root():
         databaseFile = database.database_file
 
     databaseStats = []
+
+    start = datetime.now()
     log.log(logger.LogLevel.INFO, '/root, BEFORE db queries')
     databaseStats.append(get_database_stats(timedelta(days=1)))
-    log.log(logger.LogLevel.INFO, '/root, AFTER days=1')
+    log.log(logger.LogLevel.INFO, '/root, AFTER days=1 | %s' % (datetime.now() - start))
     databaseStats.append(get_database_stats(timedelta(days=7)))
-    log.log(logger.LogLevel.INFO, '/root, AFTER days=7')
+    log.log(logger.LogLevel.INFO, '/root, AFTER days=7 | %s' % (datetime.now() - start))
     databaseStats.append(get_database_stats())
-    log.log(logger.LogLevel.INFO, '/root, AFTER total')
+    log.log(logger.LogLevel.INFO, '/root, AFTER total | %s' % (datetime.now() - start))
 
     return render_template('main_page.html', runtime=runtime, threads=threads, spiders=spiders, max_urls=max_urls,
                             refresh=refresh_rate, database=databaseFile, logger=log,
