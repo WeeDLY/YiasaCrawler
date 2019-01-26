@@ -136,14 +136,10 @@ def get_database_stats(timespan = None):
     else:
         offset = datetime.now() - timespan
     
-    q = query.QUERY_GET_CRAWLED_WITHIN_TIMESPAN()
-    q += " UNION "
-    q += query.QUERY_GET_EMAILS_WITHIN_TIMESPAN()
+    q = query.QUERY_GET_DATABASE_STATS_WITHIN_TIMESPAN()
     param = (offset, offset)
-    
 
     result = database.query_get(q, param,)
-    print(result)
     if timespan is None:
         timespan = "Total"
         

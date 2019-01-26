@@ -37,6 +37,15 @@ def QUERY_GET_EMAILS_WITHIN_TIMESPAN():
     return """ SELECT COUNT(email) FROM crawl_information
                 WHERE extracted_date >= ? """
 
+def QUERY_GET_DATABASE_STATS_WITHIN_TIMESPAN():
+    """ returns amount of crawled websites and emails gained within a set timespan """
+    return """ SELECT COUNT(*) FROM crawled
+                WHERE last_crawled >= ?
+                UNION
+                SELECT COUNT(email) FROM crawl_information
+                WHERE extracted_date >= ?
+                """
+
 def QUERY_GET_CRAWLED_WITHIN_TIMESPAN():
     """ returns amount of crawled websites within a set timespan """
     return """ SELECT COUNT(*) FROM crawled
