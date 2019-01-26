@@ -5,6 +5,16 @@ class SpiderTable():
         self.spider = spider
         self.runtime = runtime
 
+class DatabaseStats():
+    """ Class that contains Database stats for the server """
+    def __init__(self, crawled, email, timespan):
+        self.crawled = crawled
+        self.email = email
+        if timespan != "Total":
+            self.timespan = "Last %s" % timespan
+        else:
+            self.timespan = timespan
+
 class Domain():
     """ Class that holds information about newly found domains """
     def __init__(self, domain, priority, started, date_added):
